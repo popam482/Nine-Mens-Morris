@@ -3,6 +3,7 @@ package Controllers;
 //import Model.LocalPlayer;
 //import Model.Pieces;
 //import Model.Player;
+import GameLogic.FullBoard;
 import Navigator.Navigator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;

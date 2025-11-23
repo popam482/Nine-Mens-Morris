@@ -1,129 +1,97 @@
 package GameLogic;
 
+import Players.LocalPlayer;
+import javafx.scene.shape.Circle;
+
 public class FullBoard {
 
-    private SquareNode[] allNodes;
-    String currentPlayer;
+    private final SquareNode[] allNodes = new SquareNode[24];
+    LocalPlayer player1, player2;
 
     public FullBoard() {
-        allNodes = new SquareNode[3];
-        intializeNodes();
-        setAllNeighbours();
-        intializeGame();
+        initializeNodes();
+        initializeRingNeighbours();   // left/right inside each square
+        initializeVerticalLinks();    // up/down between squares for positions 1,3,5,7
+        //
+        // initializeGame();
     }
 
-    private void intializeNodes(){
-        for(int i=0; i<8; i++){
-            allNodes[i]=new SquareNode(0, i);
+    public FullBoard(String playerName1, String playerName2) {
+        initializeNodes();
+        initializeRingNeighbours();
+        initializeVerticalLinks();
+        setPlayers(playerName1, playerName2);
+        // alte initializari de joc (daca este cazul)
+    }
+
+
+    private void initializeNodes() {
+        for (int i = 0; i < 8; i++) {
+            allNodes[i] = new SquareNode(0, i);       // outer 0..7
+            allNodes[8 + i] = new SquareNode(1, i);   // middle 8..15
+            allNodes[16 + i] = new SquareNode(2, i);  // inner 16..23
         }
+    }
 
-        for(int i=0; i<8; i++){
-            allNodes[i+8]=new SquareNode(1, i);
+    // set left(0) and right(2) neighbours for each node in each 8-block
+    private void initializeRingNeighbours() {
+        for (int base = 0; base <= 16; base += 8) { // 0,8,16
+            for (int i = 0; i < 8; i++) {
+                int leftIdx = (i + 7) % 8;
+                int rightIdx = (i + 1) % 8;
+                allNodes[base + i].setNeighbours(0, base + leftIdx);   // left
+                allNodes[base + i].setNeighbours(2, base + rightIdx);  // right
+            }
         }
+    }
 
-        for(int i=0; i<8; i++){
-            allNodes[i+16]=new SquareNode(2, i);
+    // set up(1) and down(3) neighbours for the four vertical columns: 1,3,5,7
+    private void initializeVerticalLinks() {
+        int[] cols = {1, 3, 5, 7};
+        for (int pos : cols) {
+            // outer -> middle
+            allNodes[0 + pos].setNeighbours(3, 8 + pos);   // outer down -> middle
+            allNodes[8 + pos].setNeighbours(1, 0 + pos);   // middle up -> outer
+
+            // middle -> inner
+            allNodes[8 + pos].setNeighbours(3, 16 + pos);  // middle down -> inner
+            allNodes[16 + pos].setNeighbours(1, 8 + pos);  // inner up -> middle
         }
-
     }
 
-    private void setAllNeighbours() {
-        // Setează conexiunile conform Board.fxml
 
-        // Outer square - conexiuni pe laturi (orizontale/verticale)
-        allNodes[0].setNeighbours(2, 1);  // dreapta
-        allNodes[0].setNeighbours(3, 7);  // jos
 
-        allNodes[1].setNeighbours(0, 0);  // stânga
-        allNodes[1].setNeighbours(2, 2);  // dreapta
-        allNodes[1].setNeighbours(3, 9);  // jos (către middle square)
-
-        allNodes[2].setNeighbours(0, 1);  // stânga
-        allNodes[2].setNeighbours(3, 3);  // jos
-
-        allNodes[3].setNeighbours(1, 2);  // sus
-        allNodes[3].setNeighbours(2, 11); // dreapta (către middle square)
-        allNodes[3].setNeighbours(3, 4);  // jos
-
-        allNodes[4].setNeighbours(1, 3);  // sus
-        allNodes[4].setNeighbours(0, 5);  // stânga
-
-        allNodes[5].setNeighbours(2, 4);  // dreapta
-        allNodes[5].setNeighbours(0, 6);  // stânga
-        allNodes[5].setNeighbours(1, 13); // sus (către middle square)
-
-        allNodes[6].setNeighbours(2, 5);  // dreapta
-        allNodes[6].setNeighbours(1, 7);  // sus
-
-        allNodes[7].setNeighbours(3, 6);  // jos
-        allNodes[7].setNeighbours(1, 0);  // sus
-        allNodes[7].setNeighbours(2, 15); // dreapta (către middle square)
-
-        // Middle square
-        allNodes[8].setNeighbours(2, 9);   // dreapta
-        allNodes[8].setNeighbours(3, 15);  // jos
-
-        allNodes[9].setNeighbours(0, 8);   // stânga
-        allNodes[9].setNeighbours(2, 10);  // dreapta
-        allNodes[9].setNeighbours(1, 1);   // sus (către outer square)
-        allNodes[9].setNeighbours(3, 17);  // jos (către inner square)
-
-        allNodes[10].setNeighbours(0, 9);  // stânga
-        allNodes[10].setNeighbours(3, 11); // jos
-
-        allNodes[11].setNeighbours(1, 10); // sus
-        allNodes[11].setNeighbours(0, 3);  // stânga (către outer square)
-        allNodes[11].setNeighbours(2, 19); // dreapta (către inner square)
-        allNodes[11].setNeighbours(3, 12); // jos
-
-        allNodes[12].setNeighbours(1, 11); // sus
-        allNodes[12].setNeighbours(0, 13); // stânga
-
-        allNodes[13].setNeighbours(2, 12); // dreapta
-        allNodes[13].setNeighbours(0, 14); // stânga
-        allNodes[13].setNeighbours(2, 5);  // dreapta (către outer square)
-        allNodes[13].setNeighbours(1, 21); // sus (către inner square)
-
-        allNodes[14].setNeighbours(2, 13); // dreapta
-        allNodes[14].setNeighbours(1, 15); // sus
-
-        allNodes[15].setNeighbours(3, 14); // jos
-        allNodes[15].setNeighbours(1, 8);  // sus
-        allNodes[15].setNeighbours(0, 7);  // stânga (către outer square)
-        allNodes[15].setNeighbours(2, 23); // dreapta (către inner square)
-
-        // Inner square
-        allNodes[16].setNeighbours(2, 17); // dreapta
-        allNodes[16].setNeighbours(3, 23); // jos
-
-        allNodes[17].setNeighbours(0, 16); // stânga
-        allNodes[17].setNeighbours(2, 18); // dreapta
-        allNodes[17].setNeighbours(1, 9);  // sus (către middle square)
-
-        allNodes[18].setNeighbours(0, 17); // stânga
-        allNodes[18].setNeighbours(3, 19); // jos
-
-        allNodes[19].setNeighbours(1, 18); // sus
-        allNodes[19].setNeighbours(0, 11); // stânga (către middle square)
-        allNodes[19].setNeighbours(3, 20); // jos
-
-        allNodes[20].setNeighbours(1, 19); // sus
-        allNodes[20].setNeighbours(0, 21); // stânga
-
-        allNodes[21].setNeighbours(2, 20); // dreapta
-        allNodes[21].setNeighbours(0, 22); // stânga
-        allNodes[21].setNeighbours(3, 13); // jos (către middle square)
-
-        allNodes[22].setNeighbours(2, 21); // dreapta
-        allNodes[22].setNeighbours(1, 23); // sus
-
-        allNodes[23].setNeighbours(3, 22); // jos
-        allNodes[23].setNeighbours(1, 16); // sus
-        allNodes[23].setNeighbours(0, 15); // stânga (către middle square)
+    public void setPlayers(String name1, String name2) {
+        if (name1 == null) name1 = "Player1";
+        if (name2 == null) name2 = "Player2";
+        player1 = new LocalPlayer(name1);
     }
 
-    private void intializeGame(){
-        
+
+    public void switchPlayer() {
+        //currentPlayer = currentPlayer.equals("WHITE") ? "BLACK" : "WHITE";
     }
 
+  /* public boolean isGameOver() {
+       // return whitePiecesOnBoard < 3 || blackPiecesOnBoard < 3;
+    }
+   */
+
+    public String getWinner() {
+       // if (whitePiecesOnBoard < 3) return "BLACK";
+        //if (blackPiecesOnBoard < 3) return "WHITE";
+        return null;
+    }
+
+    // GETTERS / UTIL
+    public SquareNode getNode(int index) { return allNodes[index]; }
+    public SquareNode[] getAllNodes() { return allNodes; }
+    //public String getCurrentPlayer() { return currentPlayer; }
+   // public GamePhase getPhase() { return phase; }
+
+    public void updateVisuals(Circle[] circles) {
+        for (int i = 0; i < 24; i++) {
+            allNodes[i].paintSlot(circles[i]);
+        }
+    }
 }
