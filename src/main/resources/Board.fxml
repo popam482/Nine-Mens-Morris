@@ -14,52 +14,61 @@
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="450.0" layoutX="150.0" layoutY="131.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="5.0" width="450.0" />
         <Rectangle arcHeight="5.0" arcWidth="5.0" fill="WHITE" height="300.0" layoutX="225.0" layoutY="210.0" stroke="BLACK" strokeType="INSIDE" strokeWidth="5.0" width="300.0" />
 
+        <!-- Outer Square (0-7) -->
+        <Circle fx:id="circle0" fill="#a6a6a6" layoutX="75.0" layoutY="63.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle2" fill="#a6a6a6" layoutX="667.0" layoutY="56.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle4" fill="#a6a6a6" layoutX="667.0" layoutY="652.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle6" fill="#a6a6a6" layoutX="75.0" layoutY="649.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
 
-        <Circle id="slot0" fill="#a6a6a6" layoutX="75.0" layoutY="63.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot1" fill="#a6a6a6" layoutX="375.0" layoutY="56.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot2" fill="#a6a6a6" layoutX="667.0" layoutY="56.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot4" fill="#a6a6a6" layoutX="667.0" layoutY="652.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot5" fill="#a6a6a6" layoutX="375.0" layoutY="656.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot6" fill="#a6a6a6" layoutX="75.0" layoutY="649.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <!-- Middle Square (8-15) -->
+        <Circle fx:id="circle8" fill="#a6a6a6" layoutX="150.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle10" fill="#a6a6a6" layoutX="593.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle12" fill="#a6a6a6" layoutX="593.0" layoutY="574.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle14" fill="#a6a6a6" layoutX="150.0" layoutY="574.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
 
+        <!-- Inner Square (16-23) -->
+        <Circle fx:id="circle16" fill="#a6a6a6" layoutX="225.0" layoutY="213.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle18" fill="#a6a6a6" layoutX="525.0" layoutY="206.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle20" fill="#a6a6a6" layoutX="525.0" layoutY="499.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle22" fill="#a6a6a6" layoutX="225.0" layoutY="499.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
 
-        <Circle id="slot8" fill="#a6a6a6" layoutX="150.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot10" fill="#a6a6a6" layoutX="593.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot12" fill="#a6a6a6" layoutX="593.0" layoutY="574.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot14" fill="#a6a6a6" layoutX="150.0" layoutY="574.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-
-
-        <Circle id="slot16" fill="#a6a6a6" layoutX="225.0" layoutY="213.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot18" fill="#a6a6a6" layoutX="525.0" layoutY="206.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot20" fill="#a6a6a6" layoutX="525.0" layoutY="499.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot21" fill="#a6a6a6" layoutX="375.0" layoutY="506.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot22" fill="#a6a6a6" layoutX="225.0" layoutY="499.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-
-
+        <!-- Lines -->
         <Line endX="100.0" layoutX="124.0" layoutY="356.0" startX="-49.00001525878906" strokeWidth="5.0" />
         <Line endX="100.0" layoutX="574.0" layoutY="360.0" startX="-49.00001525878906" strokeWidth="5.0" />
         <Line endX="100.0" layoutX="275.0" layoutY="194.0" startX="100.0" startY="-123.0" strokeWidth="5.0" />
         <Line endX="100.0" layoutX="275.0" layoutY="641.0" startX="100.0" startY="-117.79998779296875" strokeWidth="5.0" />
 
-        <Label fx:id="nameLabel" layoutX="270.0" layoutY="260.0" text="TURN">
+        <!-- Labels -->
+        <Label fx:id="player1Label" layoutX="50.0" layoutY="10.0" text="Player 1 (WHITE)">
             <font>
                 <Font size="14.0" />
             </font>
         </Label>
-        <Label fx:id="statusLabel" layoutX="270.0" layoutY="398.0" text="TURN STATUS">
+        <Label fx:id="player2Label" layoutX="438.0" layoutY="10.0" text="Player 2 (BLACK)">
             <font>
                 <Font size="14.0" />
             </font>
         </Label>
+        <Label fx:id="statusLabel" layoutX="257.0" layoutY="341.0" text="Game Status" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="16.0" />
+            </font>
+        </Label>
+
+        <!-- Buttons -->
         <Button fx:id="backButton" layoutX="75.0" layoutY="700.0" mnemonicParsing="false" onAction="#backToMainMenu" text="Back To Main Menu" />
-        <Circle id="slot15" fill="#a6a6a6" layoutX="150.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot23" fill="#a6a6a6" layoutX="225.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot7" fill="#a6a6a6" layoutX="75.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot19" fill="#a6a6a6" layoutX="525.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot11" fill="#a6a6a6" layoutX="600.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot3" fill="#a6a6a6" layoutX="675.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot13" fill="#a6a6a6" layoutX="375.0" layoutY="581.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot9" fill="#a6a6a6" layoutX="375.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
-        <Circle id="slot17" fill="#a6a6a6" layoutX="375.0" layoutY="206.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Button fx:id="resetButton" layoutX="550.0" layoutY="700.0" mnemonicParsing="false" onAction="#onResetGame" text="Reset Game" />
+        <Circle fx:id="circle7" fill="#a6a6a6" layoutX="75.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle15" fill="#a6a6a6" layoutX="150.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle23" fill="#a6a6a6" layoutX="225.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle1" fill="#a6a6a6" layoutX="375.0" layoutY="56.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle9" fill="#a6a6a6" layoutX="375.0" layoutY="131.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle17" fill="#a6a6a6" layoutX="375.0" layoutY="206.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle19" fill="#a6a6a6" layoutX="525.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle11" fill="#a6a6a6" layoutX="600.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle3" fill="#a6a6a6" layoutX="675.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle13" fill="#a6a6a6" layoutX="375.0" layoutY="581.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle5" fill="#a6a6a6" layoutX="375.0" layoutY="656.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
+        <Circle fx:id="circle21" fill="#a6a6a6" layoutX="375.0" layoutY="506.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
     </children>
 </AnchorPane>

@@ -1,29 +1,18 @@
 package GameLogic;
 
 import Players.LocalPlayer;
+import Players.Player;
 import javafx.scene.shape.Circle;
 
 public class FullBoard {
 
     private final SquareNode[] allNodes = new SquareNode[24];
-    LocalPlayer player1, player2;
 
     public FullBoard() {
         initializeNodes();
-        initializeRingNeighbours();   // left/right inside each square
-        initializeVerticalLinks();    // up/down between squares for positions 1,3,5,7
-        //
-        // initializeGame();
-    }
-
-    public FullBoard(String playerName1, String playerName2) {
-        initializeNodes();
         initializeRingNeighbours();
         initializeVerticalLinks();
-        setPlayers(playerName1, playerName2);
-        // alte initializari de joc (daca este cazul)
     }
-
 
     private void initializeNodes() {
         for (int i = 0; i < 8; i++) {
@@ -33,65 +22,84 @@ public class FullBoard {
         }
     }
 
-    // set left(0) and right(2) neighbours for each node in each 8-block
     private void initializeRingNeighbours() {
-        for (int base = 0; base <= 16; base += 8) { // 0,8,16
+        for (int base = 0; base <= 16; base += 8) {
             for (int i = 0; i < 8; i++) {
                 int leftIdx = (i + 7) % 8;
                 int rightIdx = (i + 1) % 8;
-                allNodes[base + i].setNeighbours(0, base + leftIdx);   // left
-                allNodes[base + i].setNeighbours(2, base + rightIdx);  // right
+                allNodes[base + i].setNeighbours(0, base + leftIdx);
+                allNodes[base + i].setNeighbours(2, base + rightIdx);
             }
         }
     }
 
-    // set up(1) and down(3) neighbours for the four vertical columns: 1,3,5,7
     private void initializeVerticalLinks() {
         int[] cols = {1, 3, 5, 7};
         for (int pos : cols) {
-            // outer -> middle
-            allNodes[0 + pos].setNeighbours(3, 8 + pos);   // outer down -> middle
-            allNodes[8 + pos].setNeighbours(1, 0 + pos);   // middle up -> outer
+            allNodes[0 + pos].setNeighbours(3, 8 + pos);
+            allNodes[8 + pos].setNeighbours(1, 0 + pos);
 
-            // middle -> inner
-            allNodes[8 + pos].setNeighbours(3, 16 + pos);  // middle down -> inner
-            allNodes[16 + pos].setNeighbours(1, 8 + pos);  // inner up -> middle
+            allNodes[8 + pos].setNeighbours(3, 16 + pos);
+            allNodes[16 + pos].setNeighbours(1, 8 + pos);
         }
     }
 
+    public SquareNode getNode(int index) {
+        if (index < 0 || index >= 24) return null;
+        return allNodes[index];
+    }
 
-
-    public void setPlayers(String name1, String name2) {
-        if (name1 == null) name1 = "Player1";
-        if (name2 == null) name2 = "Player2";
-        player1 = new LocalPlayer(name1);
+    public SquareNode[] getAllNodes() {
+        return allNodes;
     }
 
 
-    public void switchPlayer() {
-        //currentPlayer = currentPlayer.equals("WHITE") ? "BLACK" : "WHITE";
+    public int getNodeIndex(SquareNode node) {
+        for (int i = 0; i < 24; i++) {
+            if (allNodes[i] == node) {
+                return i;
+            }
+        }
+        return -1;
     }
 
-  /* public boolean isGameOver() {
-       // return whitePiecesOnBoard < 3 || blackPiecesOnBoard < 3;
-    }
-   */
 
-    public String getWinner() {
-       // if (whitePiecesOnBoard < 3) return "BLACK";
-        //if (blackPiecesOnBoard < 3) return "WHITE";
-        return null;
+    public int countPieces(String color) {
+        int count = 0;
+        for (SquareNode node : allNodes) {
+            if (color.equals(node.getColor())) {
+                count++;
+            }
+        }
+        return count;
     }
 
-    // GETTERS / UTIL
-    public SquareNode getNode(int index) { return allNodes[index]; }
-    public SquareNode[] getAllNodes() { return allNodes; }
-    //public String getCurrentPlayer() { return currentPlayer; }
-   // public GamePhase getPhase() { return phase; }
+
+    public boolean hasValidMoves(Player player, GameRules rules) {
+        String color = player.getColor();
+
+        for (int from = 0; from < 24; from++) {
+            if (color.equals(allNodes[from].getColor())) {
+                for (int to = 0; to < 24; to++) {
+                    if (rules.canMove(this, player, from, to)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 
     public void updateVisuals(Circle[] circles) {
         for (int i = 0; i < 24; i++) {
             allNodes[i].paintSlot(circles[i]);
+        }
+    }
+
+    public void reset() {
+        for (SquareNode node : allNodes) {
+            node.setColor("GRAY");
+            node.setOccupied(false);
         }
     }
 }
