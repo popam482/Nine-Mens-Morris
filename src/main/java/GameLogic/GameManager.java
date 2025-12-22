@@ -8,25 +8,25 @@ import Players.Player;
 public class GameManager {
     private FullBoard board;
     private Player player1, player2;
-    private Player currentPlayer;
-    private GameRules globalRules;
+    private GameRules currentRule;
     private int selectedNodeIndex = -1;
     private boolean removePhaseActive = false;
     private boolean gameOver = false;
-    private Player winner = null;
 
     public GameManager(String name1, String name2) {
         this.board = new FullBoard();
         this.player1 = new LocalPlayer(name1, "WHITE");
         this.player2 = new LocalPlayer(name2, "BLACK");
-        this.currentPlayer = player1;
-        this.globalRules = new PlacingRules();
-    }
 
+        player1.setCurrentTurn(true);
+        player2.setCurrentTurn(false);
+
+        this.currentRule = new PlacingRules();
+    }
 
     public MoveResult processClick(int nodeIndex) {
         if (gameOver) {
-            return new MoveResult(false, "Game is over!");
+            return new MoveResult(false, "Game over!");
         }
 
         if (removePhaseActive) {
@@ -36,80 +36,75 @@ public class GameManager {
         return handleNormalMove(nodeIndex);
     }
 
-
     private MoveResult handleNormalMove(int nodeIndex) {
-        MoveResult result;
+        Player currentPlayer = getCurrentPlayer();
+        GameRules playerRule = getPlayerRules(currentPlayer);
 
-        if (globalRules instanceof PlacingRules) {
-            result = globalRules.placePiece(board, currentPlayer, nodeIndex);
-
-            if (result. isSuccess()) {
-                boolean millFormed = MillChecker. checkMill(board, nodeIndex);
-
-                if (millFormed) {
-                    removePhaseActive = true;
-                    result. setMillFormed(true);
-                    result.setRemovePhase(true);
-                    result.setMessage(currentPlayer.getName() + " formed a mill!  Remove opponent's piece.");
-                } else {
-                    switchPlayer();
-                    updatePhase();
-                }
+        if (currentPlayer.piecesAvailable() > 0) {
+            MoveResult result = playerRule.placePiece(board, currentPlayer, nodeIndex);
+            if (result.isSuccess()) {
+                handleMillCheck(nodeIndex, result);
             }
+            return result;
+        }
+
+        if (selectedNodeIndex == -1) {
+            return selectPiece(nodeIndex, currentPlayer);
         } else {
-            GameRules currentPlayerRules = getPlayerRules(currentPlayer);
+            return movePieceToDestination(nodeIndex, currentPlayer, playerRule);
+        }
+    }
 
-            if (selectedNodeIndex == -1) {
-                SquareNode node = board.getNode(nodeIndex);
-                if (currentPlayer.getColor().equals(node.getColor())) {
-                    selectedNodeIndex = nodeIndex;
-                    return new MoveResult(true, "Piece selected.  Click destination.");
-                } else {
-                    return new MoveResult(false, "Select your own piece!");
-                }
-            } else {
-                result = currentPlayerRules.movePiece(board, currentPlayer, selectedNodeIndex, nodeIndex);
+    private MoveResult selectPiece(int nodeIndex, Player currentPlayer) {
+        SquareNode node = board.getNode(nodeIndex);
 
-                if (result.isSuccess()) {
-                    boolean millFormed = MillChecker.checkMill(board, nodeIndex);
+        if (currentPlayer.getColor().equals(node.getColor())) {
+            selectedNodeIndex = nodeIndex;
+            return new MoveResult(true, "Piece selected. Click destination");
+        }
+        return new MoveResult(false, "Select your own piece");
+    }
 
-                    selectedNodeIndex = -1;
+    private MoveResult movePieceToDestination(int toIndex, Player currentPlayer, GameRules playerRules) {
+        MoveResult result = playerRules.movePiece(board, currentPlayer, selectedNodeIndex, toIndex);
+        selectedNodeIndex = -1;
 
-                    if (millFormed) {
-                        removePhaseActive = true;
-                        result.setMillFormed(true);
-                        result.setRemovePhase(true);
-                        result. setMessage(currentPlayer.getName() + " formed a mill! Remove opponent's piece.");
-                    } else {
-                        switchPlayer();
-                        updatePhase();
-                        if (checkGameOver()) {
-                            result.setGameOver(true);
-                            result. setWinner(winner);
-                        }
-                    }
-                } else {
-                    selectedNodeIndex = -1;
-                }
-            }
+        if (result.isSuccess()) {
+            handleMillCheck(toIndex, result);
         }
 
         return result;
     }
 
+    private void handleMillCheck(int nodeIndex, MoveResult result) {
+        boolean millFormed = MillChecker.checkMill(board, nodeIndex);
+
+        if (millFormed) {
+            removePhaseActive = true;
+            result. setMillFormed(true);
+            result.setRemovePhase(true);
+            result.setMessage(getCurrentPlayer().getName() + " formed a mill!  Remove opponent's piece.");
+        } else {
+            switchPlayer();
+            updatePhase();
+
+            if (checkGameOver()) {
+                result.setGameOver(true);
+                result.setWinner(getWinner());
+            }
+        }
+    }
 
     private MoveResult handleRemovePhase(int nodeIndex) {
         Player opponent = getOpponent();
-        String opponentColor = opponent.getColor();
-
         SquareNode node = board.getNode(nodeIndex);
 
-        if (! opponentColor.equals(node. getColor())) {
+        if (!opponent.getColor().equals(node.getColor())) {
             return new MoveResult(false, "You must remove an opponent's piece!");
         }
 
-        if (! MillChecker.canRemovePiece(board, nodeIndex, opponentColor)) {
-            return new MoveResult(false, "Cannot remove piece from a mill (opponent has pieces outside mills)!");
+        if (!MillChecker. canRemovePiece(board, nodeIndex, opponent.getColor())) {
+            return new MoveResult(false, "Cannot remove piece from a mill!");
         }
 
         node.setColor("GRAY");
@@ -117,13 +112,11 @@ public class GameManager {
         opponent.decrementPiecesOnBoard();
 
         removePhaseActive = false;
-
         MoveResult result = new MoveResult(true, opponent.getName() + "'s piece removed!");
-
 
         if (checkGameOverAfterRemoval(opponent)) {
             result.setGameOver(true);
-            result. setWinner(winner);
+            result. setWinner(getWinner());
         } else {
             switchPlayer();
             updatePhase();
@@ -132,45 +125,45 @@ public class GameManager {
         return result;
     }
 
+    private Player getOpponent() {
+        return player1.isCurrentTurn() ? player2 : player1;
+    }
 
     private void switchPlayer() {
-        currentPlayer = (currentPlayer == player1) ?  player2 : player1;
+        player1.setCurrentTurn(!player1.isCurrentTurn());
+        player2.setCurrentTurn(! player2.isCurrentTurn());
     }
-
 
     private void updatePhase() {
-        if (globalRules instanceof PlacingRules) {
-            if (player1.piecesAvailable() == 0 && player2.piecesAvailable() == 0) {
-                globalRules = new MovingRules();
-            }
+        if (player1.piecesAvailable() == 0 && player2.piecesAvailable() == 0) {
+            currentRule = new MovingRules();
         }
     }
-
 
     private GameRules getPlayerRules(Player player) {
-        if (player.piecesOnBoard() == 3 && !(globalRules instanceof PlacingRules)) {
+        if (player.piecesOnBoard() == 3 && player.piecesAvailable() == 0) {
             return new FlyingRules();
         }
-        return globalRules;
+        return currentRule;
     }
 
-
     private boolean checkGameOver() {
-        if (globalRules instanceof PlacingRules) {
+        Player currentPlayer = getCurrentPlayer();
+
+        if (currentPlayer.piecesAvailable() > 0) {
             return false;
         }
 
-
         if (currentPlayer.piecesOnBoard() < 3) {
             gameOver = true;
-            winner = getOpponent();
+            getOpponent().setWinner();
             return true;
         }
 
-        GameRules currentPlayerRules = getPlayerRules(currentPlayer);
-        if (! board.hasValidMoves(currentPlayer, currentPlayerRules)) {
+        GameRules playerRules = getPlayerRules(currentPlayer);
+        if (!board.hasValidMoves(currentPlayer, playerRules)) {
             gameOver = true;
-            winner = getOpponent();
+            getOpponent().setWinner();
             return true;
         }
 
@@ -178,20 +171,20 @@ public class GameManager {
     }
 
     private boolean checkGameOverAfterRemoval(Player playerWhoLostPiece) {
-        if (globalRules instanceof PlacingRules) {
+        if (playerWhoLostPiece. piecesAvailable() > 0) {
             return false;
         }
 
-        if (playerWhoLostPiece.piecesOnBoard() < 3) {
+        if (playerWhoLostPiece. piecesOnBoard() < 3) {
             gameOver = true;
-            winner = currentPlayer;
+            getCurrentPlayer().setWinner();
             return true;
         }
 
         GameRules playerRules = getPlayerRules(playerWhoLostPiece);
-        if (!board.hasValidMoves(playerWhoLostPiece, playerRules)) {
+        if (!board. hasValidMoves(playerWhoLostPiece, playerRules)) {
             gameOver = true;
-            winner = currentPlayer;
+            getCurrentPlayer().setWinner();
             return true;
         }
 
@@ -199,32 +192,29 @@ public class GameManager {
     }
 
 
-    private Player getOpponent() {
-        return (currentPlayer == player1) ?  player2 : player1;
-    }
-
-
     public void resetGame() {
         board.reset();
-        String name1 = player1.getName();
-        String name2 = player2. getName();
-        player1 = new LocalPlayer(name1, "WHITE");
-        player2 = new LocalPlayer(name2, "BLACK");
-        currentPlayer = player1;
-        globalRules = new PlacingRules();
+
+        player1.resetForNewGame();
+        player2.resetForNewGame();
+
+        player1.setCurrentTurn(true);
+
+        currentRule = new PlacingRules();
         selectedNodeIndex = -1;
         removePhaseActive = false;
         gameOver = false;
-        winner = null;
     }
 
-    // GETTERS
+
+
     public FullBoard getBoard() {
         return board;
     }
 
+
     public Player getCurrentPlayer() {
-        return currentPlayer;
+        return player1.isCurrentTurn() ? player1 : player2;
     }
 
     public Player getPlayer1() {
@@ -236,7 +226,7 @@ public class GameManager {
     }
 
     public GameRules getCurrentRules() {
-        return globalRules;
+        return currentRule;
     }
 
     public int getSelectedNodeIndex() {
@@ -252,28 +242,31 @@ public class GameManager {
     }
 
     public Player getWinner() {
-        return winner;
+        if (player1.isWinner()) {
+            return player1;
+        } else if (player2.isWinner()) {
+            return player2;
+        }
+        return null;
     }
 
     public String getGameStatus() {
+        Player currentPlayer = getCurrentPlayer();
+
         if (gameOver) {
-            return "GAME OVER! " + winner.getName() + " WINS! ";
+            Player winner = getWinner();
+            return "Game over! " + winner.getName() + " wins!";
         }
 
         if (removePhaseActive) {
-            return currentPlayer.getName() + ": REMOVE opponent's piece";
-        }
-
-        if (globalRules instanceof PlacingRules) {
-            return currentPlayer.getName() + "'s turn - PLACE piece ";
+            return currentPlayer.getName() + ": Remove opponent's piece";
         }
 
         if (selectedNodeIndex != -1) {
-            return currentPlayer.getName() + ": Select DESTINATION";
+            return currentPlayer.getName() + ": Select destination";
         }
 
         GameRules currentPlayerRules = getPlayerRules(currentPlayer);
-        String phaseText = currentPlayerRules.getPhaseName();
-        return currentPlayer.getName() + "'s turn - " + phaseText;
+        return currentPlayer.getName() + "'s turn - " + currentPlayerRules.getPhaseName();
     }
 }

@@ -6,12 +6,16 @@ public abstract class Player {
     private String color; // "WHITE" sau "BLACK"
     private int piecesAvailable;
     private int piecesOnBoard;
+    private boolean isCurrentTurn;
+    private boolean isWinner;
 
     public Player(String name, String color){
         this.name = name;
         this.color = color;
         this.piecesAvailable = 9;
         this.piecesOnBoard = 0;
+        this.isCurrentTurn=false;
+        this.isWinner=false;
     }
 
     // GETTERS
@@ -31,6 +35,14 @@ public abstract class Player {
         return piecesAvailable;
     }
 
+    public boolean isCurrentTurn(){
+        return isCurrentTurn;
+    }
+
+    public boolean isWinner(){
+        return isWinner;
+    }
+
     // SETTERS
     public void decrementAvailablePieces(){
         if(piecesAvailable > 0) {
@@ -48,9 +60,19 @@ public abstract class Player {
         }
     }
 
+    public void setCurrentTurn(boolean currentTurn){
+        isCurrentTurn=currentTurn;
+    }
+
+    public void setWinner(){
+        isWinner=true;
+    }
+
     public void resetForNewGame() {
         this.piecesAvailable = 9;
         this.piecesOnBoard = 0;
+        this.isCurrentTurn = false;
+        this.isWinner = false;
     }
 
 }
