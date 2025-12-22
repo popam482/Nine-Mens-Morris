@@ -1,6 +1,6 @@
-package GameLogic;
+package Board;
 
-public class SquareNode extends Node{
+public class SquareNode extends Node {
 
     private int positionInSquare;
     private int level; // 0-outside square 1-middle square 2-inside square

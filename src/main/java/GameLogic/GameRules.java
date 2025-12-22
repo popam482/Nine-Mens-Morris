@@ -1,5 +1,6 @@
 package GameLogic;
 
+import Board.FullBoard;
 import Players.Player;
 
 public interface GameRules {

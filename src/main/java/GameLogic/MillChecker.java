@@ -1,5 +1,8 @@
 package GameLogic;
 
+import Board.FullBoard;
+import Board.SquareNode;
+
 public class MillChecker {
 
 
@@ -18,8 +21,8 @@ public class MillChecker {
                 " (level=" + level + ", pos=" + position + ", color=" + color + ")");
 
 
-        if (checkHorizontalMill(board, level, position, color)) {
-            System.out.println("  -> HORIZONTAL MILL FOUND!");
+        if (checkMill(board, level, position, color)) {
+            System.out.println("  -> MILL FOUND!");
             return true;
         }
 
@@ -41,7 +44,7 @@ public class MillChecker {
       4-5-6 (bottom horizontal)
       6-7-0 (left vertical)
      */
-    private static boolean checkHorizontalMill(FullBoard board, int level, int position, String color) {
+    private static boolean checkMill(FullBoard board, int level, int position, String color) {
         int baseIndex = level * 8;
 
 
@@ -129,17 +132,4 @@ public class MillChecker {
         return false;
     }
 
-
-    public static void printBoardStatus(FullBoard board) {
-        System.out.println("\n=== BOARD STATUS ===");
-        for (int i = 0; i < 24; i++) {
-            SquareNode node = board.getNode(i);
-            String color = node.getColor();
-            if (!"GRAY".equals(color)) {
-                boolean inMill = checkMill(board, i);
-                System.out.println("Position " + i + ": " + color + (inMill ? " [IN MILL]" : ""));
-            }
-        }
-        System.out.println("===================\n");
-    }
 }

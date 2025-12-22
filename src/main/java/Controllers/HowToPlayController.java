@@ -11,5 +11,4 @@ public class HowToPlayController {
         Navigator.goTo("Menu.fxml");
     }
 
-
 }

@@ -1,6 +1,6 @@
-package GameLogic;
+package Board;
 
-import Players.LocalPlayer;
+import GameLogic.GameRules;
 import Players.Player;
 import javafx.scene.shape.Circle;
 

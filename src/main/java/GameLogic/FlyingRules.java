@@ -1,5 +1,7 @@
 package GameLogic;
 
+import Board.FullBoard;
+import Board.SquareNode;
 import Players.Player;
 
 public class FlyingRules implements GameRules {
