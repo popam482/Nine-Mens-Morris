@@ -7,8 +7,9 @@ import Players.Player;
 
 public class GameManager {
     private FullBoard board;
-    private Player player1, player2;
+    private final Player player1, player2;
     private GameRules currentRule;
+    private final MillChecker millChecker;
     private int selectedNodeIndex = -1;
     private boolean removePhaseActive = false;
     private boolean gameOver = false;
@@ -21,7 +22,8 @@ public class GameManager {
         player1.setCurrentTurn(true);
         player2.setCurrentTurn(false);
 
-        this.currentRule = new PlacingRules();
+        currentRule = new PlacingRules();
+        millChecker = new MillChecker();
     }
 
     public MoveResult processClick(int nodeIndex) {
@@ -77,7 +79,7 @@ public class GameManager {
     }
 
     private void handleMillCheck(int nodeIndex, MoveResult result) {
-        boolean millFormed = MillChecker.checkMill(board, nodeIndex);
+        boolean millFormed = millChecker.checkMill(board, nodeIndex);
 
         if (millFormed) {
             removePhaseActive = true;
@@ -103,7 +105,7 @@ public class GameManager {
             return new MoveResult(false, "You must remove an opponent's piece!");
         }
 
-        if (!MillChecker. canRemovePiece(board, nodeIndex, opponent.getColor())) {
+        if (!millChecker.canRemovePiece(board, nodeIndex, opponent.getColor())) {
             return new MoveResult(false, "Cannot remove piece from a mill!");
         }
 

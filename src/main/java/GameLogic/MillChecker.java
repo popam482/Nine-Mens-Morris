@@ -6,7 +6,7 @@ import Board.SquareNode;
 public class MillChecker {
 
 
-    public static boolean checkMill(FullBoard board, int nodeIndex) {
+    public boolean checkMill(FullBoard board, int nodeIndex) {
         SquareNode node = board.getNode(nodeIndex);
         String color = node.getColor();
 
@@ -28,8 +28,8 @@ public class MillChecker {
 
 
         if (position == 1 || position == 3 || position == 5 || position == 7) {
-            if (checkVerticalMill(board, position, color)) {
-                System.out.println("  -> VERTICAL MILL FOUND!");
+            if (checkInterSquareMill(board, position, color)) {
+                System.out.println("  -> INTER-SQUARE MILL FOUND!");
                 return true;
             }
         }
@@ -44,7 +44,7 @@ public class MillChecker {
       4-5-6 (bottom horizontal)
       6-7-0 (left vertical)
      */
-    private static boolean checkMill(FullBoard board, int level, int position, String color) {
+    private boolean checkMill(FullBoard board, int level, int position, String color) {
         int baseIndex = level * 8;
 
 
@@ -76,7 +76,7 @@ public class MillChecker {
     }
 
 
-    private static boolean checkVerticalMill(FullBoard board, int position, String color) {
+    private boolean checkInterSquareMill(FullBoard board, int position, String color) {
         int outerIndex = position;           // 0-7
         int middleIndex = 8 + position;      // 8-15
         int innerIndex = 16 + position;      // 16-23
@@ -85,7 +85,7 @@ public class MillChecker {
     }
 
 
-    private static boolean checkThreeInRow(FullBoard board, int idx1, int idx2, int idx3, String color) {
+    private boolean checkThreeInRow(FullBoard board, int idx1, int idx2, int idx3, String color) {
         SquareNode node1 = board.getNode(idx1);
         SquareNode node2 = board.getNode(idx2);
         SquareNode node3 = board.getNode(idx3);
@@ -102,7 +102,7 @@ public class MillChecker {
     }
 
 
-    public static boolean canRemovePiece(FullBoard board, int nodeIndex, String opponentColor) {
+    public boolean canRemovePiece(FullBoard board, int nodeIndex, String opponentColor) {
         SquareNode node = board.getNode(nodeIndex);
 
         if (!opponentColor.equals(node.getColor())) {
@@ -119,7 +119,7 @@ public class MillChecker {
     }
 
 
-    private static boolean hasNonMillPieces(FullBoard board, String color) {
+    private boolean hasNonMillPieces(FullBoard board, String color) {
         for (int i = 0; i < 24; i++) {
             SquareNode node = board.getNode(i);
             if (color.equals(node.getColor())) {
