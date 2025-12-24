@@ -125,15 +125,6 @@ public class GameManager {
         return result;
     }
 
-    private Player getOpponent() {
-        return player1.isCurrentTurn() ? player2 : player1;
-    }
-
-    private void switchPlayer() {
-        player1.setCurrentTurn(!player1.isCurrentTurn());
-        player2.setCurrentTurn(! player2.isCurrentTurn());
-    }
-
     private void updatePhase() {
         if (player1.piecesAvailable() == 0 && player2.piecesAvailable() == 0) {
             currentRule = new MovingRules();
@@ -191,25 +182,34 @@ public class GameManager {
         return false;
     }
 
-
-    public void resetGame() {
+    public void resetGame(){
         board.reset();
-
         player1.resetForNewGame();
         player2.resetForNewGame();
 
         player1.setCurrentTurn(true);
+        player2.setCurrentTurn(false);
 
-        currentRule = new PlacingRules();
-        selectedNodeIndex = -1;
-        removePhaseActive = false;
-        gameOver = false;
+        currentRule=new PlacingRules();
+        selectedNodeIndex=-1;
+        removePhaseActive=false;
+        gameOver=false;
     }
 
-
+    //getters
 
     public FullBoard getBoard() {
         return board;
+    }
+
+
+    private Player getOpponent() {
+        return player1.isCurrentTurn() ? player2 : player1;
+    }
+
+    private void switchPlayer() {
+        player1.setCurrentTurn(!player1.isCurrentTurn());
+        player2.setCurrentTurn(! player2.isCurrentTurn());
     }
 
 
@@ -225,21 +225,10 @@ public class GameManager {
         return player2;
     }
 
-    public GameRules getCurrentRules() {
-        return currentRule;
-    }
-
     public int getSelectedNodeIndex() {
         return selectedNodeIndex;
     }
 
-    public boolean isRemovePhaseActive() {
-        return removePhaseActive;
-    }
-
-    public boolean isGameOver() {
-        return gameOver;
-    }
 
     public Player getWinner() {
         if (player1.isWinner()) {

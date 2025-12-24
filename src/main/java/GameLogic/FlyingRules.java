@@ -40,6 +40,6 @@ public class FlyingRules implements GameRules {
 
     @Override
     public String getPhaseName() {
-        return "Flying Phase (3 pieces remaining!)";
+        return "Flying Phase";
     }
 }

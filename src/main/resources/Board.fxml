@@ -44,20 +44,20 @@
                 <Font size="14.0" />
             </font>
         </Label>
-        <Label fx:id="player2Label" layoutX="438.0" layoutY="10.0" text="Player 2 (BLACK)">
+        <Label fx:id="player2Label" layoutX="421.0" layoutY="10.0" text="Player 2 (BLACK)">
             <font>
                 <Font size="14.0" />
             </font>
         </Label>
-        <Label fx:id="statusLabel" layoutX="257.0" layoutY="341.0" text="Game Status" textAlignment="CENTER">
+        <Label fx:id="statusLabel" layoutX="251.0" layoutY="347.0" text="Game Status" textAlignment="CENTER">
             <font>
-                <Font name="System Bold" size="16.0" />
+                <Font name="System Bold" size="15.0" />
             </font>
         </Label>
 
         <!-- Buttons -->
-        <Button fx:id="backButton" layoutX="75.0" layoutY="700.0" mnemonicParsing="false" onAction="#backToMainMenu" text="Back To Main Menu" />
-        <Button fx:id="resetButton" layoutX="550.0" layoutY="700.0" mnemonicParsing="false" onAction="#onResetGame" text="Reset Game" />
+        <Button fx:id="backButton" layoutX="104.0" layoutY="674.0" mnemonicParsing="false" onAction="#backToMainMenu" text="Back To Main Menu" />
+        <Button fx:id="resetButton" layoutX="545.0" layoutY="674.0" mnemonicParsing="false" onAction="#onResetGame" text="Reset Game" />
         <Circle fx:id="circle7" fill="#a6a6a6" layoutX="75.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
         <Circle fx:id="circle15" fill="#a6a6a6" layoutX="150.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />
         <Circle fx:id="circle23" fill="#a6a6a6" layoutX="225.0" layoutY="360.0" onMouseClicked="#onClick" radius="15.0" stroke="#a6a6a6" strokeType="INSIDE" />

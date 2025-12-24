@@ -39,7 +39,7 @@ public class Navigator {
             if (scene != null) {
                 scene.setRoot(root);
             } else {
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, 750, 750));
             }
             stage.centerOnScreen();
             T controller = (T) loader.getController();

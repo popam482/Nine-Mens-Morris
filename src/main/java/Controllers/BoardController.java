@@ -70,7 +70,8 @@ public class BoardController {
         alert.setHeaderText("Are you sure you want to reset? ");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            Navigator.goTo("Board.fxml");
+            gameManager.resetGame();
+            boardView.update(gameManager);
         }
     }
 
@@ -79,7 +80,7 @@ public class BoardController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Back to Menu");
         alert.setHeaderText("Are you sure you want to go back to main menu?");
-        alert.setContentText("Current game progress will be lost.");
+        alert.setContentText("Current game will be lost.");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             Navigator.goTo("Menu.fxml");
@@ -92,7 +93,7 @@ public class BoardController {
         alert.setContentText("Congratulations!");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            Navigator.goTo("PlayerSetup.fxml");
+            Navigator.goTo("Menu.fxml");
         }
     }
 }

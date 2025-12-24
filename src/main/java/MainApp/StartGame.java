@@ -21,9 +21,12 @@ public class StartGame extends Application {
             stage.getIcons().add(logo);
 
             stage.setResizable(false);
+
             stage.setTitle("Nine Men's Morris");
-            stage.centerOnScreen();
+
+            stage.sizeToScene();
             stage.show();
+            stage.centerOnScreen();
 
         }catch(Exception e){
             e.printStackTrace();
