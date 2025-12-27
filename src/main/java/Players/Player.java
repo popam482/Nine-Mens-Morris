@@ -18,7 +18,10 @@ public abstract class Player {
         this.isWinner=false;
     }
 
+    public abstract Move getNextMove();
+
     // GETTERS
+
     public String getName(){
         return name;
     }

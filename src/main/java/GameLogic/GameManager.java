@@ -14,10 +14,10 @@ public class GameManager {
     private boolean removePhaseActive = false;
     private boolean gameOver = false;
 
-    public GameManager(String name1, String name2) {
+    public GameManager(Player player1, Player player2) {
         this.board = new FullBoard();
-        this.player1 = new LocalPlayer(name1, "WHITE");
-        this.player2 = new LocalPlayer(name2, "BLACK");
+        this.player1 = player1;
+        this.player2 = player2;
 
         player1.setCurrentTurn(true);
         player2.setCurrentTurn(false);

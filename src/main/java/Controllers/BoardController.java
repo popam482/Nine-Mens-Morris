@@ -4,6 +4,10 @@ import Board.BoardView;
 import GameLogic.GameManager;
 import GameLogic.MoveResult;
 import Navigator.Navigator;
+import Network.NetworkConnection;
+import Players.LocalPlayer;
+import Players.Player;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -11,6 +15,10 @@ import javafx. scene.control.ButtonType;
 import javafx.scene.control. Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class BoardController {
 
@@ -26,6 +34,11 @@ public class BoardController {
     @FXML private Label player2Label;
     @FXML private Button resetButton;
 
+    private NetworkConnection networkConnection;
+    private Thread receiveThread;
+    private boolean isNetworkGame = false;
+
+
     @FXML
     private void initialize() {
         Circle[] circles = new Circle[]{
@@ -39,9 +52,84 @@ public class BoardController {
     }
 
     public void initializeGame(String player1Name, String player2Name) {
-        gameManager = new GameManager(player1Name, player2Name);
+        Player p1=new LocalPlayer(player1Name, "WHITE");
+        Player p2=new LocalPlayer(player2Name, "BLACK");
+        gameManager = new GameManager(p1, p2);
         boardView.update(gameManager);
+        isNetworkGame=false;
     }
+
+    public void initializeAsHost(String playerName, int port) {
+        try {
+            Platform.runLater(() -> statusLabel.setText("Waiting for opponent on port " + port + "..."));
+
+            ServerSocket serverSocket = new ServerSocket(port);
+            Socket clientSocket = serverSocket.accept();
+
+            Platform.runLater(() -> statusLabel.setText("✅ Opponent connected! "));
+
+            networkConnection = new NetworkConnection(clientSocket);
+
+            Player p1 = new LocalPlayer(playerName, "WHITE");
+            Player p2 = new LocalPlayer("Opponent", "BLACK");
+            gameManager = new GameManager(p1, p2);
+            boardView.update(gameManager);
+
+            isNetworkGame = true;
+            startReceiveThread();
+
+        } catch (IOException e) {
+            showError("Failed to start server: " + e.getMessage());
+        }
+    }
+
+
+    public void initializeAsClient(String playerName, String host, int port) {
+        try {
+            Platform.runLater(() -> statusLabel.setText("Connecting to " + host + ":" + port + "..."));
+
+            Socket socket = new Socket(host, port);
+
+            Platform.runLater(() -> statusLabel.setText("" + "Connected to host!"));
+
+            networkConnection = new NetworkConnection(socket);
+
+            Player p1 = new LocalPlayer("Opponent", "WHITE");
+            Player p2 = new LocalPlayer(playerName, "BLACK");
+            gameManager = new GameManager(p1, p2);
+            boardView.update(gameManager);
+
+            isNetworkGame = true;
+            startReceiveThread();
+
+        } catch (IOException e) {
+            showError("Failed to connect: " + e.getMessage());
+        }
+    }
+
+    private void startReceiveThread() {
+        receiveThread = new Thread(() -> {
+            try {
+                while (true) {
+                    String message = networkConnection.receive();
+                    int position = Integer.parseInt(message. split(":")[0]);
+                    Platform.runLater(() -> {
+                        MoveResult result = gameManager.processClick(position);
+                        boardView.update(gameManager);
+
+                        if (result. isSuccess() && result.isGameOver()) {
+                            showGameOverDialog(result. getWinner().getName());
+                        }
+                    });
+                }
+            } catch (IOException e) {
+                System.out.println("Connection closed");
+            }
+        });
+        receiveThread.setDaemon(true);
+        receiveThread.start();
+    }
+
 
     @FXML
     private void onClick(MouseEvent e) {
@@ -54,7 +142,10 @@ public class BoardController {
 
         if (result.isSuccess()) {
             boardView.update(gameManager);
-
+            if (isNetworkGame && networkConnection != null) {
+                String message = nodeIndex + ":" + gameManager.getCurrentPlayer().getColor();
+                networkConnection.send(message);
+            }
             if (result.isGameOver()) {
                 showGameOverDialog(result.getWinner().getName());
             }
@@ -96,4 +187,12 @@ public class BoardController {
             Navigator.goTo("Menu.fxml");
         }
     }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 }
