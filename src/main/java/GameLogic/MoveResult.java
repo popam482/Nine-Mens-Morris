@@ -40,6 +40,10 @@ public class MoveResult {
         return winner;
     }
 
+    public boolean isRemovePhase() {
+        return removePhase;
+    }
+
     // SETTERS
     public void setMillFormed(boolean millFormed) {
         this.millFormed = millFormed;

@@ -37,6 +37,7 @@ public class BoardController {
     private NetworkConnection networkConnection;
     private Thread receiveThread;
     private boolean isNetworkGame = false;
+    private boolean isHost=false;
 
 
     @FXML
@@ -60,27 +61,36 @@ public class BoardController {
     }
 
     public void initializeAsHost(String playerName, int port) {
-        try {
-            Platform.runLater(() -> statusLabel.setText("Waiting for opponent on port " + port + "..."));
+        Player p1 = new LocalPlayer(playerName, "WHITE");
+        Player p2 = new LocalPlayer("Opponent", "BLACK");
+        gameManager = new GameManager(p1, p2);
+        boardView.update(gameManager);
 
-            ServerSocket serverSocket = new ServerSocket(port);
-            Socket clientSocket = serverSocket.accept();
+        isNetworkGame = true;
+        isHost = true;
 
-            Platform.runLater(() -> statusLabel.setText("✅ Opponent connected! "));
+        Platform.runLater(() -> statusLabel.setText("Waiting for opponent on port " + port));
 
-            networkConnection = new NetworkConnection(clientSocket);
+        Thread serverThread = new Thread(() -> {
+            try {
+                ServerSocket serverSocket = new ServerSocket(port);
+                Socket clientSocket = serverSocket.accept();
 
-            Player p1 = new LocalPlayer(playerName, "WHITE");
-            Player p2 = new LocalPlayer("Opponent", "BLACK");
-            gameManager = new GameManager(p1, p2);
-            boardView.update(gameManager);
+                networkConnection = new NetworkConnection(clientSocket);
 
-            isNetworkGame = true;
-            startReceiveThread();
+                Platform.runLater(() -> {
+                    statusLabel.setText("Opponent connected!  Your turn!");
+                    boardView.update(gameManager);
+                });
 
-        } catch (IOException e) {
-            showError("Failed to start server: " + e.getMessage());
-        }
+                startReceiveThread();
+
+            } catch (IOException e) {
+                Platform.runLater(() -> showError("Failed to start server: " + e.getMessage()));
+            }
+        });
+        serverThread.setDaemon(true);
+        serverThread.start();
     }
 
 
@@ -100,6 +110,7 @@ public class BoardController {
             boardView.update(gameManager);
 
             isNetworkGame = true;
+            isHost=false;
             startReceiveThread();
 
         } catch (IOException e) {
@@ -111,14 +122,64 @@ public class BoardController {
         receiveThread = new Thread(() -> {
             try {
                 while (true) {
-                    String message = networkConnection.receive();
-                    int position = Integer.parseInt(message. split(":")[0]);
-                    Platform.runLater(() -> {
-                        MoveResult result = gameManager.processClick(position);
-                        boardView.update(gameManager);
+                    String message = networkConnection. receive();
+                    System.out. println("📥 RECEIVED:  " + message);
 
-                        if (result. isSuccess() && result.isGameOver()) {
-                            showGameOverDialog(result. getWinner().getName());
+                    if (message.equals("RESET")) {
+                        Platform.runLater(() -> {
+                            gameManager.resetGame();
+                            boardView.update(gameManager);
+                            showInfo("Opponent reset the game!");
+                        });
+                        continue;
+                    }
+
+                    if (message.equals("MENU")) {
+                        Platform. runLater(() -> {
+                            showInfo("Opponent left the game.");
+                            Navigator.goTo("Menu.fxml");
+                        });
+                        break;
+                    }
+
+                    // Parse protocol
+                    String[] parts = message.split(":");
+                    String type = parts[0];
+                    int pos1 = Integer.parseInt(parts[1]);
+                    int pos2 = Integer.parseInt(parts[2]);
+                    String color = parts[3];
+
+                    Platform.runLater(() -> {
+                        try {
+                            switch (type) {
+                                case "PLACE":
+                                case "REMOVE":
+                                    // ✅ Un singur click - folosește processClick
+                                    MoveResult result = gameManager.processClick(pos1);
+                                    System.out.println("   Applied " + type + " at " + pos1 + ":  " + result.getMessage());
+                                    break;
+
+                                case "MOVE":
+                                    // ✅ MOVE trebuie aplicat FORȚAT fără validare de tură!
+                                    // Setăm manual selectedNodeIndex și aplicăm mutarea
+
+                                    System.out.println("   Applying MOVE from " + pos1 + " to " + pos2);
+
+                                    // Hack:  Setăm selectedNodeIndex direct în GameManager
+                                    // (trebuie să adaugi setter în GameManager!)
+                                    gameManager.setSelectedNodeIndex(pos1);
+
+                                    // Acum aplicăm mutarea
+                                    MoveResult moveResult = gameManager. processClick(pos2);
+                                    System.out.println("   Move result: " + moveResult.getMessage());
+                                    break;
+                            }
+
+                            boardView.update(gameManager);
+
+                        } catch (Exception e) {
+                            System.err.println("Error applying move: " + e.getMessage());
+                            e.printStackTrace();
                         }
                     });
                 }
@@ -126,8 +187,17 @@ public class BoardController {
                 System.out.println("Connection closed");
             }
         });
-        receiveThread.setDaemon(true);
+        receiveThread. setDaemon(true);
         receiveThread.start();
+    }
+
+    private void showInfo(String s) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Info");
+            alert.setContentText(s);
+            alert.showAndWait();
+        });
     }
 
 
@@ -135,23 +205,50 @@ public class BoardController {
     private void onClick(MouseEvent e) {
         if (gameManager == null) return;
 
+        if (isNetworkGame) {
+            Player currentPlayer = gameManager.getCurrentPlayer();
+            Player localPlayer = getLocalPlayer();
+
+            if (currentPlayer != localPlayer) {
+                boardView. showError("Wait for opponent's turn");
+                return;
+            }
+        }
+
         int nodeIndex = boardView.getCircleIndex((Circle) e.getSource());
         if (nodeIndex == -1) return;
+
+
+        String currentColor = gameManager.getCurrentPlayer().getColor();
+        Player playerBeforeMove = gameManager.getCurrentPlayer();
 
         MoveResult result = gameManager.processClick(nodeIndex);
 
         if (result.isSuccess()) {
             boardView.update(gameManager);
             if (isNetworkGame && networkConnection != null) {
-                String message = nodeIndex + ":" + gameManager.getCurrentPlayer().getColor();
-                networkConnection.send(message);
+                Player playerAfterMove = gameManager.  getCurrentPlayer();
+
+                boolean turnChanged = (playerBeforeMove != playerAfterMove);
+                boolean isRemovePhase = result.isRemovePhase();
+                if (turnChanged || isRemovePhase) {
+                    String message = nodeIndex + ":" + currentColor;
+                    networkConnection.send(message);
+                    System.out.println("SENT: " + message + " (turn changed:  " + turnChanged + ", remove:  " + isRemovePhase + ")");
+                } else {
+                    System.out.println("Piece selected (turn NOT changed), not sending");
+                }
             }
+
             if (result.isGameOver()) {
                 showGameOverDialog(result.getWinner().getName());
             }
         } else {
             boardView.showError(result.getMessage());
         }
+    }
+    private Player getLocalPlayer() {
+        return isHost?gameManager.getPlayer1(): gameManager.getPlayer2();
     }
 
     @FXML
@@ -163,6 +260,9 @@ public class BoardController {
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             gameManager.resetGame();
             boardView.update(gameManager);
+            if(isNetworkGame && networkConnection!=null){
+                networkConnection.send("RESET");
+            }
         }
     }
 
@@ -174,6 +274,16 @@ public class BoardController {
         alert.setContentText("Current game will be lost.");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+
+            if(isNetworkGame && networkConnection!=null){
+                networkConnection.send("MENU");
+                try{
+                    networkConnection.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             Navigator.goTo("Menu.fxml");
         }
     }

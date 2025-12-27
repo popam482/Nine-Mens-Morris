@@ -116,17 +116,29 @@ public class GameManager {
         removePhaseActive = false;
         MoveResult result = new MoveResult(true, opponent.getName() + "'s piece removed!");
 
-        if (checkGameOverAfterRemoval(opponent)) {
-            result.setGameOver(true);
-            result. setWinner(getWinner());
+        boolean inPlacingPhase = (player1.piecesAvailable() > 0 || player2.piecesAvailable() > 0);
+
+        if (inPlacingPhase){
+            if (opponent. piecesOnBoard() < 3 && opponent.piecesAvailable() == 0) {
+                gameOver = true;
+                getCurrentPlayer().setWinner();
+                result.setGameOver(true);
+                result.setWinner(getWinner());
+            } else {
+                switchPlayer();
+            }
         } else {
-            switchPlayer();
-            updatePhase();
+            if (checkGameOverAfterRemoval(opponent)) {
+                result.setGameOver(true);
+                result.setWinner(getWinner());
+            } else {
+                switchPlayer();
+                updatePhase();
+            }
         }
 
         return result;
     }
-
     private void updatePhase() {
         if (player1.piecesAvailable() == 0 && player2.piecesAvailable() == 0) {
             currentRule = new MovingRules();
@@ -239,6 +251,10 @@ public class GameManager {
             return player2;
         }
         return null;
+    }
+
+    public void setSelectedNodeIndex(int index) {
+        this.selectedNodeIndex = index;
     }
 
     public String getGameStatus() {
