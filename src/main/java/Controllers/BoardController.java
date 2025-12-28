@@ -11,14 +11,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx. scene.control.ButtonType;
-import javafx.scene.control. Label;
-import javafx.scene.input.MouseEvent;
+import javafx.scene. control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene. input.MouseEvent;
 import javafx.scene.shape.Circle;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.net. Socket;
 
 public class BoardController {
 
@@ -28,17 +28,16 @@ public class BoardController {
     @FXML private Circle circle0, circle1, circle2, circle3, circle4, circle5, circle6, circle7;
     @FXML private Circle circle8, circle9, circle10, circle11, circle12, circle13, circle14, circle15;
     @FXML private Circle circle16, circle17, circle18, circle19, circle20, circle21, circle22, circle23;
-
     @FXML private Label statusLabel;
     @FXML private Label player1Label;
     @FXML private Label player2Label;
     @FXML private Button resetButton;
 
+
     private NetworkConnection networkConnection;
     private Thread receiveThread;
     private boolean isNetworkGame = false;
-    private boolean isHost=false;
-
+    private boolean isHost = false;
 
     @FXML
     private void initialize() {
@@ -53,11 +52,11 @@ public class BoardController {
     }
 
     public void initializeGame(String player1Name, String player2Name) {
-        Player p1=new LocalPlayer(player1Name, "WHITE");
-        Player p2=new LocalPlayer(player2Name, "BLACK");
+        Player p1 = new LocalPlayer(player1Name, "WHITE");
+        Player p2 = new LocalPlayer(player2Name, "BLACK");
         gameManager = new GameManager(p1, p2);
         boardView.update(gameManager);
-        isNetworkGame=false;
+        isNetworkGame = false;
     }
 
     public void initializeAsHost(String playerName, int port) {
@@ -79,8 +78,8 @@ public class BoardController {
                 networkConnection = new NetworkConnection(clientSocket);
 
                 Platform.runLater(() -> {
-                    statusLabel.setText("Opponent connected!  Your turn!");
-                    boardView.update(gameManager);
+                    statusLabel.setText("Opponent connected!   Your turn!");
+                    boardView. update(gameManager);
                 });
 
                 startReceiveThread();
@@ -89,18 +88,18 @@ public class BoardController {
                 Platform.runLater(() -> showError("Failed to start server: " + e.getMessage()));
             }
         });
-        serverThread.setDaemon(true);
+        serverThread. setDaemon(true);
         serverThread.start();
     }
 
-
+    // ===== NETWORK - CLIENT =====
     public void initializeAsClient(String playerName, String host, int port) {
         try {
-            Platform.runLater(() -> statusLabel.setText("Connecting to " + host + ":" + port + "..."));
+            Platform.runLater(() -> statusLabel.setText("Connecting to " + host + ":" + port));
 
             Socket socket = new Socket(host, port);
 
-            Platform.runLater(() -> statusLabel.setText("" + "Connected to host!"));
+            Platform.runLater(() -> statusLabel.setText("Connected to host!"));
 
             networkConnection = new NetworkConnection(socket);
 
@@ -110,7 +109,8 @@ public class BoardController {
             boardView.update(gameManager);
 
             isNetworkGame = true;
-            isHost=false;
+            isHost = false;
+
             startReceiveThread();
 
         } catch (IOException e) {
@@ -122,9 +122,7 @@ public class BoardController {
         receiveThread = new Thread(() -> {
             try {
                 while (true) {
-                    String message = networkConnection. receive();
-                    System.out. println("📥 RECEIVED:  " + message);
-
+                    String message = networkConnection.receive();
                     if (message.equals("RESET")) {
                         Platform.runLater(() -> {
                             gameManager.resetGame();
@@ -134,70 +132,40 @@ public class BoardController {
                         continue;
                     }
 
-                    if (message.equals("MENU")) {
-                        Platform. runLater(() -> {
+                    if (message. equals("MENU")) {
+                        Platform.runLater(() -> {
                             showInfo("Opponent left the game.");
                             Navigator.goTo("Menu.fxml");
                         });
                         break;
                     }
-
-                    // Parse protocol
-                    String[] parts = message.split(":");
-                    String type = parts[0];
-                    int pos1 = Integer.parseInt(parts[1]);
-                    int pos2 = Integer.parseInt(parts[2]);
-                    String color = parts[3];
-
-                    Platform.runLater(() -> {
-                        try {
-                            switch (type) {
-                                case "PLACE":
-                                case "REMOVE":
-                                    // ✅ Un singur click - folosește processClick
-                                    MoveResult result = gameManager.processClick(pos1);
-                                    System.out.println("   Applied " + type + " at " + pos1 + ":  " + result.getMessage());
-                                    break;
-
-                                case "MOVE":
-                                    // ✅ MOVE trebuie aplicat FORȚAT fără validare de tură!
-                                    // Setăm manual selectedNodeIndex și aplicăm mutarea
-
-                                    System.out.println("   Applying MOVE from " + pos1 + " to " + pos2);
-
-                                    // Hack:  Setăm selectedNodeIndex direct în GameManager
-                                    // (trebuie să adaugi setter în GameManager!)
-                                    gameManager.setSelectedNodeIndex(pos1);
-
-                                    // Acum aplicăm mutarea
-                                    MoveResult moveResult = gameManager. processClick(pos2);
-                                    System.out.println("   Move result: " + moveResult.getMessage());
-                                    break;
-                            }
-
-                            boardView.update(gameManager);
-
-                        } catch (Exception e) {
-                            System.err.println("Error applying move: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
+                    if (message.startsWith("CLICK:")) {
+                        int position = Integer.parseInt(message.substring(6));
+                        Platform.runLater(() -> applyOpponentClick(position));
+                    }
                 }
             } catch (IOException e) {
-                System.out.println("Connection closed");
+                System.out.println("Connection closed:  " + e.getMessage());
             }
         });
-        receiveThread. setDaemon(true);
+        receiveThread.setDaemon(true);
         receiveThread.start();
     }
 
-    private void showInfo(String s) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Info");
-            alert.setContentText(s);
-            alert.showAndWait();
-        });
+
+    private void applyOpponentClick(int position) {
+        System.out.println("🔵 Applying opponent click on position: " + position);
+
+        MoveResult result = gameManager.processClick(position);
+
+        System.out.println("   Result: " + result.getMessage());
+        System.out.println("   Success: " + result.isSuccess());
+
+        boardView.update(gameManager);
+
+        if (result.isSuccess() && result.isGameOver()) {
+            showGameOverDialog(result.getWinner().getName());
+        }
     }
 
 
@@ -206,11 +174,11 @@ public class BoardController {
         if (gameManager == null) return;
 
         if (isNetworkGame) {
-            Player currentPlayer = gameManager.getCurrentPlayer();
+            Player currentPlayer = gameManager. getCurrentPlayer();
             Player localPlayer = getLocalPlayer();
 
             if (currentPlayer != localPlayer) {
-                boardView. showError("Wait for opponent's turn");
+                boardView.showError("Wait for opponent's turn!");
                 return;
             }
         }
@@ -218,25 +186,38 @@ public class BoardController {
         int nodeIndex = boardView.getCircleIndex((Circle) e.getSource());
         if (nodeIndex == -1) return;
 
+        System.out.println("Local click on position: " + nodeIndex);
 
-        String currentColor = gameManager.getCurrentPlayer().getColor();
-        Player playerBeforeMove = gameManager.getCurrentPlayer();
+        Player playerBefore = gameManager.getCurrentPlayer();
+        int selectedBefore = gameManager.getSelectedNodeIndex();
 
         MoveResult result = gameManager.processClick(nodeIndex);
 
+        System.out.println("Result: " + result.getMessage());
+        System.out.println("Success: " + result.isSuccess());
+
         if (result.isSuccess()) {
             boardView.update(gameManager);
-            if (isNetworkGame && networkConnection != null) {
-                Player playerAfterMove = gameManager.  getCurrentPlayer();
 
-                boolean turnChanged = (playerBeforeMove != playerAfterMove);
-                boolean isRemovePhase = result.isRemovePhase();
-                if (turnChanged || isRemovePhase) {
-                    String message = nodeIndex + ":" + currentColor;
-                    networkConnection.send(message);
-                    System.out.println("SENT: " + message + " (turn changed:  " + turnChanged + ", remove:  " + isRemovePhase + ")");
+            if (isNetworkGame && networkConnection != null) {
+                Player playerAfter = gameManager.getCurrentPlayer();
+                int selectedAfter = gameManager.getSelectedNodeIndex();
+
+                boolean isJustSelection = (selectedBefore == -1 && selectedAfter != -1 && playerBefore == playerAfter && ! result.isRemovePhase());
+                boolean isMoveCompleted = (selectedBefore != -1 && selectedAfter == -1);
+
+                if (isJustSelection) {
+                    System.out.println("Just selection, NOT sending");
+
+                } else if (isMoveCompleted) {
+                    System.out.println("Sending MOVE:  " + selectedBefore + " → " + nodeIndex);
+                    networkConnection.send("CLICK:" + selectedBefore);
+                    networkConnection.send("CLICK:" + nodeIndex);
+
                 } else {
-                    System.out.println("Piece selected (turn NOT changed), not sending");
+
+                    System.out. println("Sending single click");
+                    networkConnection. send("CLICK:" + nodeIndex);
                 }
             }
 
@@ -247,9 +228,7 @@ public class BoardController {
             boardView.showError(result.getMessage());
         }
     }
-    private Player getLocalPlayer() {
-        return isHost?gameManager.getPlayer1(): gameManager.getPlayer2();
-    }
+
 
     @FXML
     private void onResetGame() {
@@ -257,14 +236,16 @@ public class BoardController {
         alert.setTitle("Reset Game");
         alert.setHeaderText("Are you sure you want to reset? ");
 
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+        if (alert.showAndWait().orElse(ButtonType. CANCEL) == ButtonType.OK) {
             gameManager.resetGame();
             boardView.update(gameManager);
-            if(isNetworkGame && networkConnection!=null){
+
+            if (isNetworkGame && networkConnection != null) {
                 networkConnection.send("RESET");
             }
         }
     }
+
 
     @FXML
     private void backToMainMenu() {
@@ -274,35 +255,50 @@ public class BoardController {
         alert.setContentText("Current game will be lost.");
 
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-
-            if(isNetworkGame && networkConnection!=null){
+            if (isNetworkGame && networkConnection != null) {
                 networkConnection.send("MENU");
-                try{
+                try {
                     networkConnection.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             }
 
             Navigator.goTo("Menu.fxml");
         }
     }
+
+
     private void showGameOverDialog(String winnerName) {
-        Alert alert = new Alert(Alert. AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
         alert.setHeaderText(winnerName + " wins!");
         alert.setContentText("Congratulations!");
 
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+        if (alert.showAndWait().orElse(ButtonType. CANCEL) == ButtonType.OK) {
             Navigator.goTo("Menu.fxml");
         }
     }
 
-    private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setContentText(message);
-        alert.showAndWait();
+    private Player getLocalPlayer() {
+        return isHost ?  gameManager.getPlayer1() : gameManager.getPlayer2();
     }
 
+    private void showError(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
+
+    private void showInfo(String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType. INFORMATION);
+            alert.setTitle("Info");
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
+    }
 }
