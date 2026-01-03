@@ -64,17 +64,6 @@ public class FullBoard {
     }
 
 
-    public int countPieces(String color) {
-        int count = 0;
-        for (SquareNode node : allNodes) {
-            if (color.equals(node.getColor())) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-
     public boolean hasValidMoves(Player player, GameRules rules) {
         String color = player.getColor();
 

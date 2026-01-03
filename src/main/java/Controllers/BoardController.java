@@ -79,7 +79,8 @@ public class BoardController {
 
                 Platform.runLater(() -> {
                     statusLabel.setText("Opponent connected!   Your turn!");
-                    boardView. update(gameManager);
+                    boardView.update(gameManager);
+                    setupWindowCloseHandler();
                 });
 
                 startReceiveThread();
@@ -111,6 +112,7 @@ public class BoardController {
             isNetworkGame = true;
             isHost = false;
 
+            setupWindowCloseHandler();
             startReceiveThread();
 
         } catch (IOException e) {
@@ -225,6 +227,8 @@ public class BoardController {
                 showGameOverDialog(result.getWinner().getName());
             }
         } else {
+            gameManager.clearSelection();
+            boardView.update(gameManager);
             boardView.showError(result.getMessage());
         }
     }
@@ -257,17 +261,67 @@ public class BoardController {
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             if (isNetworkGame && networkConnection != null) {
                 networkConnection.send("MENU");
-                try {
-                    networkConnection.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
+                new Thread(()->{
+                    try{
+                        networkConnection.close();
+                        System.out.println("Connection closed");
+                    }catch(IOException ex){
+                        ex.printStackTrace();
+                    }
+                }).start();
             }
 
             Navigator.goTo("Menu.fxml");
         }
     }
 
+
+    public void setupWindowCloseHandler() {
+        Platform.runLater(() -> {
+            // Găsește Stage-ul (fereastra)
+            javafx.stage.Stage stage = (javafx.stage.Stage) statusLabel.getScene().getWindow();
+
+            if (stage != null) {
+                stage.setOnCloseRequest(event -> {
+                    System.out. println("🚨 Window close requested (X button)");
+
+                    if (isNetworkGame && networkConnection != null) {
+                        // Confirmă închiderea în joc multiplayer
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Exit Game");
+                        alert.setHeaderText("Are you sure you want to exit? ");
+                        alert.setContentText("Your opponent will be notified.");
+
+                        if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+                            event.consume();  // Anulează închiderea
+                            return;
+                        }
+
+                        // Notifică adversarul
+                        networkConnection.send("MENU");
+                        System.out.println("📤 Sent MENU on window close");
+
+                        // Închide conexiunea pe thread separat
+                        final NetworkConnection conn = networkConnection;
+                        networkConnection = null;
+
+                        new Thread(() -> {
+                            try {
+                                Thread.sleep(100);  // Timp să se trimită mesajul
+                                conn.close();
+                                System.out. println("✅ Connection closed on exit");
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }).start();
+                    }
+
+                    // Permite închiderea
+                    System.out.println("✅ Window closing.. .");
+                });
+            }
+        });
+    }
 
     private void showGameOverDialog(String winnerName) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

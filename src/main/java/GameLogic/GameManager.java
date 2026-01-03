@@ -237,8 +237,9 @@ public class GameManager {
         return selectedNodeIndex;
     }
 
-    public void setSelectedNodeIndex(int index) {
-        this.selectedNodeIndex = index;
+    public void clearSelection(){
+        selectedNodeIndex=-1;
+        System.out.println("Highlight turned off");
     }
 
     public Player getWinner() {
