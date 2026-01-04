@@ -3,72 +3,73 @@ package Players;
 public abstract class Player {
 
     private String name;
-    private String color; // "WHITE" sau "BLACK"
+    private String color;
     private int piecesAvailable;
     private int piecesOnBoard;
     private boolean isCurrentTurn;
     private boolean isWinner;
 
-    public Player(String name, String color){
+    public Player(String name, String color) {
         this.name = name;
         this.color = color;
         this.piecesAvailable = 9;
         this.piecesOnBoard = 0;
-        this.isCurrentTurn=false;
-        this.isWinner=false;
+        this.isCurrentTurn = false;
+        this.isWinner = false;
     }
 
     public abstract Move getNextMove();
 
-    // GETTERS
+    public abstract void sendMove(Move move);
 
-    public String getName(){
+    // Getters
+    public String getName() {
         return name;
     }
 
-    public String getColor(){
+    public String getColor() {
         return color;
     }
 
-    public int piecesOnBoard(){
+    public int piecesOnBoard() {
         return piecesOnBoard;
     }
 
-    public int piecesAvailable(){
+    public int piecesAvailable() {
         return piecesAvailable;
     }
 
-    public boolean isCurrentTurn(){
+    public boolean isCurrentTurn() {
         return isCurrentTurn;
     }
 
-    public boolean isWinner(){
+    public boolean isWinner() {
         return isWinner;
     }
 
-    // SETTERS
-    public void decrementAvailablePieces(){
-        if(piecesAvailable > 0) {
+    // Setters
+    public void decrementAvailablePieces() {
+        if (piecesAvailable > 0) {
             piecesAvailable--;
         }
     }
 
-    public void incrementPiecesOnBoard(){
+    public void incrementPiecesOnBoard() {
         piecesOnBoard++;
     }
 
-    public void decrementPiecesOnBoard(){
-        if(piecesOnBoard > 0) {
+    public void decrementPiecesOnBoard() {
+        if (piecesOnBoard > 0) {
             piecesOnBoard--;
         }
     }
 
-    public void setCurrentTurn(boolean currentTurn){
-        isCurrentTurn=currentTurn;
+    public void setCurrentTurn(boolean currentTurn) {
+        isCurrentTurn = currentTurn;
     }
 
-    public void setWinner(){
-        isWinner=true;
+    public void setWinner() {
+        isWinner = true;
     }
 
     public void resetForNewGame() {
@@ -77,5 +78,4 @@ public abstract class Player {
         this.isCurrentTurn = false;
         this.isWinner = false;
     }
-
 }

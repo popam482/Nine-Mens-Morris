@@ -1,48 +1,48 @@
 package Players;
 
 import Network.NetworkConnection;
-import java.io.IOException;
 
 public class NetworkPlayer extends Player {
 
-    private final String connectionId;
-    private NetworkConnection connection;
-    private Move pendingMove=null;
+    private final NetworkConnection connection;
+    private final boolean isLocal;  // True dacă e jucătorul local (trimite), false dacă e remote (primește)
+    private Move pendingMove = null;
 
-    public NetworkPlayer(String name, String color, String connectionId) {
+    /**
+     * Constructor pentru NetworkPlayer
+     * @param isLocal - true dacă e jucătorul local (trimite mutări), false dacă e remote (primește)
+     */
+    public NetworkPlayer(String name, String color, NetworkConnection connection, boolean isLocal) {
         super(name, color);
-        this.connectionId = connectionId;
-    }
-
-    public void setConnection(NetworkConnection connection) {
         this.connection = connection;
+        this.isLocal = isLocal;
     }
 
-    public void receiveMove(Move move){
-        this.pendingMove=move;
+    public void receiveMove(Move move) {
+        this.pendingMove = move;
     }
 
     @Override
     public Move getNextMove() {
-        if (connection == null) return null;
+        Move move = pendingMove;
+        pendingMove = null;
+        return move;
+    }
 
-        try {
-            String message = connection.receive();
-            return Move.fromString(message);
-        } catch (IOException e) {
-            System.err.println("Error receiving move: " + e.getMessage());
-            return null;
+    @Override
+    public void sendMove(Move move) {
+        // Doar LOCAL player trimite mutări
+        if (isLocal && connection != null) {
+            connection. send(move.toString());
+            System.out.println("NetworkPlayer (" + getName() + ") sent: " + move);
         }
     }
 
-    public void sendMove(int position) {
-        if (connection != null) {
-            Move move = new Move(position, getColor());
-            connection.send(move.toString());  // Trimite "5:WHITE"
-        }
+    public boolean isLocal() {
+        return isLocal;
     }
 
-    public String getConnectionId() {
-        return connectionId;
+    public boolean hasPendingMove() {
+        return pendingMove != null;
     }
 }

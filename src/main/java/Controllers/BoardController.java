@@ -2,17 +2,17 @@ package Controllers;
 
 import Board.BoardView;
 import GameLogic.GameManager;
-import GameLogic. MoveResult;
+import GameLogic.MoveResult;
 import Navigator.Navigator;
 import Network.NetworkConnection;
-import Players. LocalPlayer;
-import Players.Move;
+import Players. Move;
+import Players.NetworkPlayer;
 import Players.Player;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene. control.Button;
-import javafx.scene. control.ButtonType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
@@ -35,6 +35,7 @@ public class BoardController {
     @FXML private Button resetButton;
 
     private NetworkConnection networkConnection;
+    private NetworkPlayer remotePlayer;  // Reference la remote player pentru a primi mutări
     private Thread receiveThread;
     private boolean isNetworkGame = false;
     private boolean isHost = false;
@@ -52,19 +53,15 @@ public class BoardController {
     }
 
     public void initializeGame(String player1Name, String player2Name) {
-        Player p1 = new LocalPlayer(player1Name, "WHITE");
-        Player p2 = new LocalPlayer(player2Name, "BLACK");
+        // Pentru joc local, folosim tot NetworkPlayer dar fără conexiune reală
+        Player p1 = new NetworkPlayer(player1Name, "WHITE", null, true);
+        Player p2 = new NetworkPlayer(player2Name, "BLACK", null, true);
         gameManager = new GameManager(p1, p2);
         boardView.update(gameManager);
         isNetworkGame = false;
     }
 
     public void initializeAsHost(String playerName, int port) {
-        Player p1 = new LocalPlayer(playerName, "WHITE");
-        Player p2 = new LocalPlayer("Opponent", "BLACK");
-        gameManager = new GameManager(p1, p2);
-        boardView.update(gameManager);
-
         isNetworkGame = true;
         isHost = true;
 
@@ -73,13 +70,23 @@ public class BoardController {
         Thread serverThread = new Thread(() -> {
             try {
                 ServerSocket serverSocket = new ServerSocket(port);
-                Socket clientSocket = serverSocket.accept();
+                System.out.println("Server waiting for connection.. .");
+
+                Socket clientSocket = serverSocket. accept();
+                System.out. println("Client connected!");
 
                 networkConnection = new NetworkConnection(clientSocket);
 
+                // Ambii NetworkPlayer cu aceeași conexiune
+                Player p1 = new NetworkPlayer(playerName, "WHITE", networkConnection, true);   // Local - trimite
+                Player p2 = new NetworkPlayer("Opponent", "BLACK", networkConnection, false);  // Remote - primește
+
+                remotePlayer = (NetworkPlayer) p2;
+
                 Platform.runLater(() -> {
-                    statusLabel.setText("Opponent connected!  Your turn!");
+                    gameManager = new GameManager(p1, p2);
                     boardView.update(gameManager);
+                    statusLabel.setText("Opponent connected!  Your turn!");
                     setupWindowCloseHandler();
                 });
 
@@ -98,38 +105,43 @@ public class BoardController {
             Platform.runLater(() -> statusLabel.setText("Connecting to " + host + ":" + port));
 
             Socket socket = new Socket(host, port);
-
-            Platform.runLater(() -> statusLabel.setText("Connected to host! "));
+            System.out.println("Connected to host!");
 
             networkConnection = new NetworkConnection(socket);
 
-            Player p1 = new LocalPlayer("Opponent", "WHITE");
-            Player p2 = new LocalPlayer(playerName, "BLACK");
-            gameManager = new GameManager(p1, p2);
-            boardView.update(gameManager);
+            // Ambii NetworkPlayer cu aceeași conexiune
+            Player p1 = new NetworkPlayer("Opponent", "WHITE", networkConnection, false);  // Remote - primește
+            Player p2 = new NetworkPlayer(playerName, "BLACK", networkConnection, true);   // Local - trimite
+
+            remotePlayer = (NetworkPlayer) p1;
+
+            Platform.runLater(() -> {
+                gameManager = new GameManager(p1, p2);
+                boardView.update(gameManager);
+                statusLabel.setText("Connected to host!");
+                setupWindowCloseHandler();
+            });
 
             isNetworkGame = true;
             isHost = false;
 
-            setupWindowCloseHandler();
             startReceiveThread();
 
         } catch (IOException e) {
-            showError("Failed to connect: " + e.getMessage());
+            showError("Failed to connect:  " + e.getMessage());
         }
     }
 
-    // ✅ MODIFICAT
     private void startReceiveThread() {
         receiveThread = new Thread(() -> {
             try {
                 while (true) {
                     String message = networkConnection.receive();
 
-                    if (message. equals("RESET")) {
+                    if (message.equals("RESET")) {
                         Platform.runLater(() -> {
                             gameManager.resetGame();
-                            boardView. update(gameManager);
+                            boardView.update(gameManager);
                             showInfo("Opponent reset the game!");
                         });
                         continue;
@@ -138,23 +150,18 @@ public class BoardController {
                     if (message.equals("MENU")) {
                         Platform.runLater(() -> {
                             showInfo("Opponent left the game.");
-                            Navigator. goTo("Menu.fxml");
+                            Navigator.goTo("Menu");
                         });
                         break;
                     }
 
-                    if (message.contains(":") && !message.equals("RESET") && !message.equals("MENU")) {
+                    if (message.contains(":") && ! message.equals("RESET") && !message.equals("MENU")) {
                         Move move = Move.fromString(message);
                         if (move != null) {
-                            Platform. runLater(() -> applyOpponentMove(move));
+                            remotePlayer. receiveMove(move);
+                            Platform.runLater(() -> applyOpponentMove(move));
                             continue;
                         }
-                    }
-
-                    // Backwards compatibility
-                    if (message.startsWith("CLICK:")) {
-                        int position = Integer.parseInt(message.substring(6));
-                        Platform.runLater(() -> applyOpponentClick(position));
                     }
                 }
             } catch (IOException e) {
@@ -165,21 +172,6 @@ public class BoardController {
         receiveThread.start();
     }
 
-    private void applyOpponentClick(int position) {
-        System.out.println("Applying opponent click on position: " + position);
-
-        MoveResult result = gameManager.processClick(position);
-
-        System.out.println("   Result: " + result.getMessage());
-        System.out.println("   Success: " + result. isSuccess());
-
-        boardView. update(gameManager);
-
-        if (result.isSuccess() && result.isGameOver()) {
-            showGameOverDialog(result.getWinner().getName());
-        }
-    }
-
     private void applyOpponentMove(Move move) {
         System.out.println("Applying opponent move: from=" + move.getFrom() + " to=" + move.getTo());
 
@@ -188,7 +180,7 @@ public class BoardController {
         if (move.isSinglePosition()) {
             result = gameManager.processClick(move.getTo());
         } else {
-            result = gameManager.processClick(move. getFrom());
+            result = gameManager.processClick(move.getFrom());
             if (result.isSuccess()) {
                 result = gameManager.processClick(move.getTo());
             }
@@ -197,7 +189,7 @@ public class BoardController {
         boardView.update(gameManager);
 
         if (result.isSuccess() && result.isGameOver()) {
-            showGameOverDialog(result. getWinner().getName());
+            showGameOverDialog(result.getWinner().getName());
         }
     }
 
@@ -218,20 +210,15 @@ public class BoardController {
         int nodeIndex = boardView.getCircleIndex((Circle) e.getSource());
         if (nodeIndex == -1) return;
 
-        System.out.println("Local click on position: " + nodeIndex);
-
         Player playerBefore = gameManager.getCurrentPlayer();
         int selectedBefore = gameManager.getSelectedNodeIndex();
 
         MoveResult result = gameManager.processClick(nodeIndex);
 
-        System.out.println("Result: " + result.getMessage());
-        System.out.println("Success: " + result.isSuccess());
-
         if (result.isSuccess()) {
-            boardView.update(gameManager);
+            boardView. update(gameManager);
 
-            if (isNetworkGame && networkConnection != null) {
+            if (isNetworkGame) {
                 Player playerAfter = gameManager.getCurrentPlayer();
                 int selectedAfter = gameManager.getSelectedNodeIndex();
 
@@ -240,22 +227,18 @@ public class BoardController {
                 boolean isMoveCompleted = (selectedBefore != -1 && selectedAfter == -1);
 
                 if (isJustSelection) {
-                    System.out. println("Just selection, NOT sending");
-
+                    // Nu trimite - doar selecție
                 } else if (isMoveCompleted) {
-                    System.out.println("Sending MOVE: " + selectedBefore + " → " + nodeIndex);
-                    Move move = new Move(selectedBefore, nodeIndex, playerBefore. getColor());
-                    networkConnection.send(move.toString());
-
+                    Move move = new Move(selectedBefore, nodeIndex, playerBefore.getColor());
+                    playerBefore.sendMove(move);  // ← Polimorfism - doar local player trimite efectiv
                 } else {
-                    System.out.println("Sending single position: " + nodeIndex);
                     Move move = new Move(nodeIndex, playerBefore.getColor());
-                    networkConnection.send(move.toString());
+                    playerBefore. sendMove(move);  // ← Polimorfism - doar local player trimite efectiv
                 }
             }
 
             if (result.isGameOver()) {
-                showGameOverDialog(result.getWinner().getName());
+                showGameOverDialog(result. getWinner().getName());
             }
         } else {
             gameManager.clearSelection();
@@ -270,7 +253,7 @@ public class BoardController {
         alert.setTitle("Reset Game");
         alert.setHeaderText("Are you sure you want to reset? ");
 
-        if (alert.showAndWait().orElse(ButtonType. CANCEL) == ButtonType.OK) {
+        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             gameManager.resetGame();
             boardView.update(gameManager);
 
@@ -287,35 +270,33 @@ public class BoardController {
         alert.setHeaderText("Are you sure you want to go back to main menu?");
         alert.setContentText("Current game will be lost.");
 
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+        if (alert.showAndWait().orElse(ButtonType. CANCEL) == ButtonType.OK) {
             if (isNetworkGame && networkConnection != null) {
                 networkConnection.send("MENU");
                 new Thread(() -> {
                     try {
                         networkConnection.close();
-                        System.out.println("Connection closed");
                     } catch (IOException ex) {
                         ex.printStackTrace();
                     }
                 }).start();
             }
 
-            Navigator.goTo("Menu.fxml");
+            Navigator.goTo("Menu");
         }
     }
 
     public void setupWindowCloseHandler() {
         Platform.runLater(() -> {
-            javafx.stage.Stage stage = (javafx. stage.Stage) statusLabel.getScene().getWindow();
+            javafx.stage.Stage stage = (javafx.stage. Stage) statusLabel.getScene().getWindow();
 
             if (stage != null) {
-                stage.setOnCloseRequest(event -> {
-                    System.out.println("Window close requested (X button)");
-
+                stage. setOnCloseRequest(event -> {
                     if (isNetworkGame && networkConnection != null) {
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                         alert.setTitle("Exit Game");
                         alert.setHeaderText("Are you sure you want to exit? ");
+                        alert.setContentText("Your opponent will be notified.");
 
                         if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
                             event.consume();
@@ -323,7 +304,6 @@ public class BoardController {
                         }
 
                         networkConnection.send("MENU");
-                        System.out.println("Sent MENU on window close");
 
                         final NetworkConnection conn = networkConnection;
                         networkConnection = null;
@@ -332,14 +312,11 @@ public class BoardController {
                             try {
                                 Thread.sleep(100);
                                 conn.close();
-                                System.out.println("Connection closed on exit");
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                             }
                         }).start();
                     }
-
-                    System.out.println("Window closing...");
                 });
             }
         });
@@ -352,12 +329,22 @@ public class BoardController {
         alert.setContentText("Congratulations!");
 
         if (alert.showAndWait().orElse(ButtonType. CANCEL) == ButtonType.OK) {
-            Navigator.goTo("Menu.fxml");
+            Navigator.goTo("Menu");
         }
     }
 
     private Player getLocalPlayer() {
-        return isHost ? gameManager.getPlayer1() : gameManager.getPlayer2();
+        Player p1 = gameManager.getPlayer1();
+        Player p2 = gameManager.getPlayer2();
+
+        if (p1 instanceof NetworkPlayer && ((NetworkPlayer) p1).isLocal()) {
+            return p1;
+        }
+        if (p2 instanceof NetworkPlayer && ((NetworkPlayer) p2).isLocal()) {
+            return p2;
+        }
+
+        return isHost ? p1 : p2;  // Fallback
     }
 
     private void showError(String message) {
@@ -371,8 +358,8 @@ public class BoardController {
 
     private void showInfo(String message) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert. setTitle("Info");
+            Alert alert = new Alert(Alert.AlertType. INFORMATION);
+            alert.setTitle("Info");
             alert.setContentText(message);
             alert.showAndWait();
         });
