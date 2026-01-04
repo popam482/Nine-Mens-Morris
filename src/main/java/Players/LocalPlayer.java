@@ -8,6 +8,14 @@ public class LocalPlayer extends Player {
         super(name, color);
     }
 
+    public void setMove(int from, int to){
+        this.pendingMove=new Move(from, to, getColor());
+    }
+
+    public void setMove(int position){
+        this.pendingMove=new Move(position, getColor());
+    }
+
     @Override
     public Move getNextMove(){
         Move move=pendingMove;
@@ -15,8 +23,7 @@ public class LocalPlayer extends Player {
         return move;
     }
 
-    public void setMove(int position){
-        this.pendingMove=new Move(position, getColor());
+    public boolean hasPendingMove(){
+        return pendingMove!=null;
     }
-
 }

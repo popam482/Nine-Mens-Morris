@@ -7,6 +7,7 @@ public class NetworkPlayer extends Player {
 
     private final String connectionId;
     private NetworkConnection connection;
+    private Move pendingMove=null;
 
     public NetworkPlayer(String name, String color, String connectionId) {
         super(name, color);
@@ -15,6 +16,10 @@ public class NetworkPlayer extends Player {
 
     public void setConnection(NetworkConnection connection) {
         this.connection = connection;
+    }
+
+    public void receiveMove(Move move){
+        this.pendingMove=move;
     }
 
     @Override
