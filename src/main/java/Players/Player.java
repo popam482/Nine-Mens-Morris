@@ -1,5 +1,8 @@
 package Players;
 
+import GameLogic.GameManager;
+import GameLogic.MoveResult;
+
 public abstract class Player {
 
     private String name;
@@ -18,9 +21,7 @@ public abstract class Player {
         this.isWinner = false;
     }
 
-    public abstract Move getNextMove();
-
-    public abstract void sendMove(Move move);
+    public abstract MoveResult processClick(int nodeId, GameManager gameManager);
 
     // Getters
     public String getName() {

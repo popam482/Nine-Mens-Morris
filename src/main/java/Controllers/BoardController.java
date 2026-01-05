@@ -199,8 +199,7 @@ public class BoardController {
         if (gameManager == null) return;
 
         if (isNetworkGame) {
-            Player currentPlayer = gameManager.getCurrentPlayer();
-
+            Player currentPlayer = gameManager. getCurrentPlayer();
             if (currentPlayer != localPlayer) {
                 boardView.showError("Wait for opponent's turn!");
                 return;
@@ -210,34 +209,14 @@ public class BoardController {
         int nodeIndex = boardView.getCircleIndex((Circle) e.getSource());
         if (nodeIndex == -1) return;
 
-        Player playerBefore = gameManager.getCurrentPlayer();
-        int selectedBefore = gameManager.getSelectedNodeIndex();
-
-        MoveResult result = gameManager.processClick(nodeIndex);
+        Player currentPlayer = gameManager. getCurrentPlayer();
+        MoveResult result = currentPlayer.processClick(nodeIndex, gameManager);
 
         if (result.isSuccess()) {
             boardView.update(gameManager);
 
-            if (isNetworkGame) {
-                Player playerAfter = gameManager.getCurrentPlayer();
-                int selectedAfter = gameManager.getSelectedNodeIndex();
-
-                boolean isJustSelection = (selectedBefore == -1 && selectedAfter != -1
-                        && playerBefore == playerAfter && ! result.isRemovePhase());
-                boolean isMoveCompleted = (selectedBefore != -1 && selectedAfter == -1);
-
-                if (isJustSelection) {
-                } else if (isMoveCompleted) {
-                    Move move = new Move(selectedBefore, nodeIndex, playerBefore.getColor());
-                    playerBefore. sendMove(move);
-                } else {
-                    Move move = new Move(nodeIndex, playerBefore.getColor());
-                    playerBefore.sendMove(move);
-                }
-            }
-
             if (result.isGameOver()) {
-                showGameOverDialog(result.getWinner().getName());
+                showGameOverDialog(result. getWinner().getName());
             }
         } else {
             gameManager.clearSelection();
