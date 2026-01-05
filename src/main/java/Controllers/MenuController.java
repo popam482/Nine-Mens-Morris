@@ -44,7 +44,6 @@ public class MenuController {
 
     @FXML
     private void startOnlineSession() {
-        // Pas 1: Nume
         TextInputDialog nameDialog = new TextInputDialog("Player");
         nameDialog.setTitle("Online Game");
         nameDialog.setHeaderText("Enter your name:");
@@ -55,7 +54,6 @@ public class MenuController {
             return;
         }
 
-        // Pas 2: IP cu sugestie 127.0.0.1 pentru testing
         TextInputDialog ipDialog = new TextInputDialog("127.0.0.1");
         ipDialog.setTitle("Online Game");
         ipDialog.setHeaderText("Enter opponent's IP address");

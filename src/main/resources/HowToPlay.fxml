@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane prefHeight="750.0" prefWidth="750.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.HowToPlayController">
    <children>
       <Label layoutX="65.0" layoutY="61.0" text="How to play &quot;Nine men's morris&quot;">
@@ -14,7 +13,7 @@
             <Font name="System Bold" size="24.0" />
          </font>
       </Label>
-      <TextArea fx:id="rulesText" editable="false" layoutX="63.0" layoutY="126.0" prefHeight="497.0" prefWidth="586.0" text="AIM&#10;&#10;To win the game you must capture your opponent's pieces until they have less than three pieces left and are unable to play a move.&#10;&#10;RULES&#10;&#10;1. To begin with the board is empty. &#10;2. Players decide who will be white by tossing a coin. Traditionally white goes first. &#10;3. At each turn a player places one of their counters on one of the points on the board. &#10;4. Each player aims to make &quot;mills&quot; which are vertical or horizontal lines of three counters in a row. &#10;5. When a player makes a mill, they can remove one of their opponent's pieces. &#10;6. Players take turns to play a piece of their own colour on any unoccupied point until all eighteen pieces have been played.&#10;7. A piece in a mill may only be removed if the opponent has no other pieces available outside mills.&#10;8. When all pieces have been placed, in each turn the player can move one piece along a line to an adjacent point. &#10;9.Captured pieces are never replayed onto the board and remain captured for the remainder of the game. &#10;10. When a player is reduced to three pieces, they may “fly” any piece to any vacant point on the board, not only adjacent points.&#10;11. The game is finished when a played loses, either by having only two pieces left or by being unable to move" wrapText="true">
+      <TextArea fx:id="rulesText" editable="false" layoutX="63.0" layoutY="126.0" prefHeight="497.0" prefWidth="586.0" text="AIM&#10;&#10;To win the game you must reduce your opponent to fewer than three pieces or leave them with no valid moves. &#10;&#10;GAME MODES&#10;&#10;The game offers two play modes: &#10;• Local Mode - Two players on the same computer taking turns&#10;• Network Mode - Play against an opponent over the network (one player hosts, the other connects)&#10;&#10;RULES&#10;&#10;1. The game starts with an empty board.&#10;2. White always goes first.&#10;3. Players alternate placing their nine pieces on empty points.&#10;4. Forming three pieces in a row (a &quot;mill&quot;) allows you to remove one opponent piece.&#10;5. You cannot remove a piece from a mill unless no other pieces are available. &#10;6. After all pieces are placed, players take turns moving one piece to an adjacent empty point.&#10;7. Removed pieces cannot return to the board.&#10;8. When reduced to three pieces, you can &quot;fly&quot; to any empty point, not just adjacent ones.&#10;9. You lose when you have fewer than three pieces or cannot make a legal move. " wrapText="true">
          <font>
             <Font name="Arial" size="15.0" />
          </font>
