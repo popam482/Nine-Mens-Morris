@@ -24,6 +24,9 @@ public class StartGame extends Application {
 
             stage.setTitle("Nine Men's Morris");
 
+            stage.getScene().getStylesheets().add(getClass().getResource("/Design.css").toExternalForm());
+
+
             stage.sizeToScene();
             stage.show();
             stage.centerOnScreen();

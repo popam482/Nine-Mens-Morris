@@ -8,7 +8,7 @@ public class MoveResult {
     private boolean millFormed;
     private boolean gameOver;
     private Player winner;
-    private boolean removePhase; // când trebuie să elimini o piesă adversă
+    private boolean removePhase;
 
     public MoveResult(boolean success, String message) {
         this.success = success;

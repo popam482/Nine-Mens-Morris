@@ -89,10 +89,6 @@ public class GameManager {
             switchPlayer();
             updatePhase();
 
-            if (checkGameOver()) {
-                result.setGameOver(true);
-                result. setWinner(getWinner());
-            }
         }
     }
 
@@ -116,14 +112,7 @@ public class GameManager {
         boolean inPlacingPhase = (player1.piecesAvailable() > 0 || player2.piecesAvailable() > 0);
 
         if (inPlacingPhase) {
-            if (opponent.piecesOnBoard() < 3 && opponent.piecesAvailable() == 0) {
-                gameOver = true;
-                getCurrentPlayer().setWinner();
-                result.setGameOver(true);
-                result.setWinner(getWinner());
-            } else {
                 switchPlayer();
-            }
         } else {
             if (checkGameOverAfterRemoval(opponent)) {
                 result.setGameOver(true);
@@ -152,8 +141,9 @@ public class GameManager {
 
     private boolean checkGameOver() {
         Player currentPlayer = getCurrentPlayer();
+        Player opponent = getOpponent();
 
-        if (currentPlayer.piecesAvailable() > 0) {
+        if (currentPlayer.piecesAvailable() > 0 || opponent.piecesAvailable()>0) {
             return false;
         }
 
@@ -164,7 +154,7 @@ public class GameManager {
         }
 
         GameRules playerRules = getPlayerRules(currentPlayer);
-        if (!board. hasValidMoves(currentPlayer, playerRules)) {
+        if (!board.hasValidMoves(currentPlayer, playerRules)) {
             gameOver = true;
             getOpponent().setWinner();
             return true;
@@ -174,7 +164,7 @@ public class GameManager {
     }
 
     private boolean checkGameOverAfterRemoval(Player playerWhoLostPiece) {
-        if (playerWhoLostPiece. piecesAvailable() > 0) {
+        if (playerWhoLostPiece.piecesAvailable() > 0) {
             return false;
         }
 
