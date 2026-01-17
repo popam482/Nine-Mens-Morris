@@ -1,11 +1,17 @@
 module com.example.mill {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.graphics;
-    requires java.desktop;
+    requires java.sql;
 
-    opens MainApp to javafx.fxml;
-    exports MainApp to javafx.graphics;
     opens Controllers to javafx.fxml;
+    opens MainApp to javafx.graphics;
 
+    exports MainApp;
+    exports Controllers;
+    exports Database;
+    exports Board;
+    exports GameLogic;
+    exports Players;
+    exports Navigator;
+    exports Network;
 }

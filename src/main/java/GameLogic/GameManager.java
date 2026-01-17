@@ -7,11 +7,13 @@ import Players.Player;
 public class GameManager {
     private FullBoard board;
     private final Player player1, player2;
-    private GameRules currentRule;
+    private IGameRules currentRule;
     private final MillChecker millChecker;
     private int selectedNodeIndex = -1;
     private boolean removePhaseActive = false;
     private boolean gameOver = false;
+
+    private long gameStartTime;
 
     public GameManager(Player player1, Player player2) {
         this.board = new FullBoard();
@@ -23,6 +25,8 @@ public class GameManager {
 
         currentRule = new PlacingRules();
         millChecker = new MillChecker();
+
+        gameStartTime=System.currentTimeMillis();
     }
 
     public MoveResult processClick(int nodeIndex) {
@@ -39,7 +43,7 @@ public class GameManager {
 
     private MoveResult handleNormalMove(int nodeIndex) {
         Player currentPlayer = getCurrentPlayer();
-        GameRules playerRule = getPlayerRules(currentPlayer);
+        IGameRules playerRule = getPlayerRules(currentPlayer);
 
         if (currentPlayer.piecesAvailable() > 0) {
             MoveResult result = playerRule.placePiece(board, currentPlayer, nodeIndex);
@@ -66,7 +70,7 @@ public class GameManager {
         return new MoveResult(false, "Select your own piece");
     }
 
-    private MoveResult movePieceToDestination(int toIndex, Player currentPlayer, GameRules playerRules) {
+    private MoveResult movePieceToDestination(int toIndex, Player currentPlayer, IGameRules playerRules) {
         MoveResult result = playerRules. movePiece(board, currentPlayer, selectedNodeIndex, toIndex);
         selectedNodeIndex = -1;
 
@@ -111,15 +115,13 @@ public class GameManager {
         MoveResult result = new MoveResult(true, opponent.getName() + "'s piece removed!");
         boolean inPlacingPhase = (player1.piecesAvailable() > 0 || player2.piecesAvailable() > 0);
 
-        if (inPlacingPhase) {
-                switchPlayer();
-        } else {
+        switchPlayer();
+        updatePhase();
+
+         if(!inPlacingPhase){
             if (checkGameOverAfterRemoval(opponent)) {
                 result.setGameOver(true);
                 result.setWinner(getWinner());
-            } else {
-                switchPlayer();
-                updatePhase();
             }
         }
 
@@ -132,52 +134,34 @@ public class GameManager {
         }
     }
 
-    private GameRules getPlayerRules(Player player) {
+    private IGameRules getPlayerRules(Player player) {
         if (player. piecesOnBoard() == 3 && player.piecesAvailable() == 0) {
             return new FlyingRules();
         }
         return currentRule;
     }
 
-    private boolean checkGameOver() {
-        Player currentPlayer = getCurrentPlayer();
-        Player opponent = getOpponent();
-
-        if (currentPlayer.piecesAvailable() > 0 || opponent.piecesAvailable()>0) {
-            return false;
-        }
-
-        if (currentPlayer.piecesOnBoard() < 3) {
-            gameOver = true;
-            getOpponent().setWinner();
-            return true;
-        }
-
-        GameRules playerRules = getPlayerRules(currentPlayer);
-        if (!board.hasValidMoves(currentPlayer, playerRules)) {
-            gameOver = true;
-            getOpponent().setWinner();
-            return true;
-        }
-
-        return false;
-    }
-
     private boolean checkGameOverAfterRemoval(Player playerWhoLostPiece) {
+        System.out.println("[DEBUG] checkGameOverAfterRemoval:");
+        System.out.println("  Player: " + playerWhoLostPiece.getName());
+        System.out.println("  Pieces available: " + playerWhoLostPiece.piecesAvailable());
+        System.out.println("  Pieces on board: " + playerWhoLostPiece.piecesOnBoard());
+        System.out.println("  In placing phase?  " + (player1.piecesAvailable() > 0 || player2.piecesAvailable() > 0));
+
         if (playerWhoLostPiece.piecesAvailable() > 0) {
             return false;
         }
 
         if (playerWhoLostPiece.piecesOnBoard() < 3) {
             gameOver = true;
-            getCurrentPlayer().setWinner();
+            getOpponent().setWinner();
             return true;
         }
 
-        GameRules playerRules = getPlayerRules(playerWhoLostPiece);
+        IGameRules playerRules = getPlayerRules(playerWhoLostPiece);
         if (!board.hasValidMoves(playerWhoLostPiece, playerRules)) {
             gameOver = true;
-            getCurrentPlayer().setWinner();
+            getOpponent().setWinner();
             return true;
         }
 
@@ -196,6 +180,16 @@ public class GameManager {
         selectedNodeIndex = -1;
         removePhaseActive = false;
         gameOver = false;
+
+        gameStartTime=System.currentTimeMillis();
+    }
+
+    public boolean isGameOver(){
+        return gameOver;
+    }
+
+    public long getGameDurationSeconds() {
+        return (System.currentTimeMillis() - gameStartTime) / 1000;
     }
 
     public FullBoard getBoard() {
@@ -257,7 +251,7 @@ public class GameManager {
             return currentPlayer.getName() + ": Select destination";
         }
 
-        GameRules currentPlayerRules = getPlayerRules(currentPlayer);
+        IGameRules currentPlayerRules = getPlayerRules(currentPlayer);
         return currentPlayer.getName() + "'s turn - " + currentPlayerRules.getPhaseName();
     }
 }

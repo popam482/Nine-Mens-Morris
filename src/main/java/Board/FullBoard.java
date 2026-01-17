@@ -1,6 +1,6 @@
 package Board;
 
-import GameLogic.GameRules;
+import GameLogic.IGameRules;
 import Players.Player;
 import javafx.scene.shape.Circle;
 
@@ -64,7 +64,7 @@ public class FullBoard {
     }
 
 
-    public boolean hasValidMoves(Player player, GameRules rules) {
+    public boolean hasValidMoves(Player player, IGameRules rules) {
         String color = player.getColor();
 
         for (int from = 0; from < 24; from++) {

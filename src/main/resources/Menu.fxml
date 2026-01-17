@@ -28,5 +28,10 @@
             <Image url="@GameLogo.png" />
          </image>
       </ImageView>
+      <Button fx:id="viewHistoryButton" alignment="CENTER" contentDisplay="CENTER" layoutX="280.0" layoutY="574.0" mnemonicParsing="false" onAction="#viewHistory" prefHeight="40.0" prefWidth="190.0" text="Session history" textFill="#813f1e">
+         <font>
+            <Font size="16.0" />
+         </font>
+      </Button>
    </children>
 </AnchorPane>

@@ -4,7 +4,7 @@ import Board.FullBoard;
 import Board.SquareNode;
 import Players.Player;
 
-public class MovingRules implements GameRules {
+public class MovingRules implements IGameRules {
 
     @Override
     public MoveResult placePiece(FullBoard board, Player player, int nodeIndex) {

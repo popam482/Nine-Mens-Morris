@@ -1,6 +1,7 @@
 package Controllers;
 
 import Board.BoardView;
+import Database.GameDatabase;
 import GameLogic.GameManager;
 import GameLogic.MoveResult;
 import Navigator.Navigator;
@@ -42,6 +43,9 @@ public class BoardController {
     private boolean isNetworkGame = false;
     private boolean isHost = false;
 
+    private GameDatabase database = new GameDatabase();
+    private String gameType="Local";
+
     @FXML
     private void initialize() {
         Circle[] circles = new Circle[]{
@@ -60,11 +64,13 @@ public class BoardController {
         gameManager = new GameManager(p1, p2);
         boardView.update(gameManager);
         isNetworkGame = false;
+        gameType="Local";
     }
 
     public void initializeAsHost(String playerName, int port) {
         isNetworkGame = true;
         isHost = true;
+        gameType="Online";
 
         Platform.runLater(() -> statusLabel.setText("Waiting for opponent on port " + port));
 
@@ -78,8 +84,18 @@ public class BoardController {
 
                 networkConnection = new NetworkConnection(clientSocket);
 
+                networkConnection.send("NAME:" + playerName);
+
+                String opponentMessage = networkConnection.receive();
+                String opponentName = "Opponent";
+                if (opponentMessage.startsWith("NAME:")) {
+                    opponentName = opponentMessage.substring(5);
+                }
+
+                String finalOpponentName=opponentName;
+
                 Player p1 = new NetworkPlayer(playerName, "WHITE", networkConnection, true);
-                Player p2 = new NetworkPlayer("Opponent", "BLACK", networkConnection, false);
+                Player p2 = new NetworkPlayer(finalOpponentName, "BLACK", networkConnection, false);
 
                 remotePlayer = (NetworkPlayer) p2;
                 localPlayer = p1;
@@ -110,7 +126,17 @@ public class BoardController {
 
             networkConnection = new NetworkConnection(socket);
 
-            Player p1 = new NetworkPlayer("Opponent", "WHITE", networkConnection, false);
+            String hostMessage = networkConnection.receive();
+            String hostName = "Opponent";
+            if (hostMessage.startsWith("NAME:")) {
+                hostName = hostMessage. substring(5);
+            }
+
+            networkConnection.send("NAME:" + playerName);
+
+            String finalHostName = hostName;
+
+            Player p1 = new NetworkPlayer(finalHostName, "WHITE", networkConnection, false);
             Player p2 = new NetworkPlayer(playerName, "BLACK", networkConnection, true);
 
             remotePlayer = (NetworkPlayer) p1;
@@ -119,12 +145,13 @@ public class BoardController {
             Platform.runLater(() -> {
                 gameManager = new GameManager(p1, p2);
                 boardView.update(gameManager);
-                statusLabel.setText("Connected to host!");
+                statusLabel.setText("Connected to " + finalHostName + "!");
                 setupWindowCloseHandler();
             });
 
             isNetworkGame = true;
             isHost = false;
+            gameType = "Online";
 
             startReceiveThread();
 
@@ -138,6 +165,10 @@ public class BoardController {
             try {
                 while (true) {
                     String message = networkConnection.receive();
+
+                    if (message. startsWith("NAME:")) {
+                        continue;
+                    }
 
                     if (message.equals("RESET")) {
                         Platform.runLater(() -> {
@@ -216,6 +247,7 @@ public class BoardController {
             boardView.update(gameManager);
 
             if (result.isGameOver()) {
+                saveGameToDatabase(result.getWinner());
                 showGameOverDialog(result. getWinner().getName());
             }
         } else {
@@ -224,6 +256,8 @@ public class BoardController {
             boardView.showError(result.getMessage());
         }
     }
+
+
 
     @FXML
     private void onResetGame() {
@@ -299,6 +333,23 @@ public class BoardController {
         });
     }
 
+    private void saveGameToDatabase(Player winner) {
+        try {
+            String player1Name = gameManager.getPlayer1().getName();
+            String player2Name = gameManager.getPlayer2().getName();
+            String winnerName = winner.getName();
+            long duration = gameManager.getGameDurationSeconds();
+
+            database.saveGame(player1Name, player2Name, winnerName, duration, gameType);
+
+            System.out.println("Game saved: " + winnerName + " won in " + duration + " seconds");
+
+        } catch (Exception e) {
+            System.err.println("Failed to save game to database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void showGameOverDialog(String winnerName) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
@@ -327,4 +378,5 @@ public class BoardController {
             alert.showAndWait();
         });
     }
+
 }

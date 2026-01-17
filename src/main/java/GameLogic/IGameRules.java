@@ -3,7 +3,7 @@ package GameLogic;
 import Board.FullBoard;
 import Players.Player;
 
-public interface GameRules {
+public interface IGameRules {
 
     MoveResult placePiece(FullBoard board, Player player, int nodeIndex);
 

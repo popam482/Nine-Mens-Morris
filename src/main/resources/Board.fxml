@@ -39,14 +39,14 @@
         <Line fx:id="square" endX="100.0" layoutX="275.0" layoutY="641.0" startX="100.0" startY="-117.79998779296875" strokeWidth="5.0" styleClass="square" />
 
         <!-- Labels -->
-        <Label fx:id="player1Label" layoutX="50.0" layoutY="10.0" text="Player 1 (WHITE)" textFill="#813f1e">
+        <Label fx:id="player1Label" layoutX="34.0" layoutY="10.0" text="Player 1 (WHITE)" textFill="#813f1e">
             <font>
-                <Font size="14.0" />
+                <Font name="System Bold" size="14.0" />
             </font>
         </Label>
-        <Label fx:id="player2Label" layoutX="421.0" layoutY="10.0" text="Player 2 (BLACK)" textFill="#813f1e">
+        <Label fx:id="player2Label" layoutX="411.0" layoutY="10.0" text="Player 2 (BLACK)" textFill="#813f1e">
             <font>
-                <Font size="14.0" />
+                <Font name="System Bold" size="14.0" />
             </font>
         </Label>
         <Label fx:id="statusLabel" layoutX="251.0" layoutY="347.0" text="Game Status" textAlignment="CENTER" textFill="#612f18">

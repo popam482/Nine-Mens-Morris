@@ -1,9 +1,11 @@
 package Controllers;
 
+import Database.GameDatabase;
 import Navigator.Navigator;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextInputDialog;
 
 import java.util.Optional;
@@ -89,10 +91,17 @@ public class MenuController {
         Navigator.goTo("HowToPlay.fxml");
     }
 
+    @FXML
+    private void viewHistory() {
+        Navigator.goTo("SessionHistory.fxml");
+    }
+
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+
 }
