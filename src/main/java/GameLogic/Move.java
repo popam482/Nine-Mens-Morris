@@ -1,4 +1,4 @@
-package Players;
+package GameLogic;
 
 public class Move {
 
@@ -28,21 +28,10 @@ public class Move {
         return to;
     }
 
-    public String getPlayerColor() {
-        return playerColor;
-    }
-
     public boolean isSinglePosition() {
         return from == -1;
     }
 
-    public boolean isDoublePosition() {
-        return from != -1;
-    }
-
-    public int getPosition() {
-        return to;
-    }
 
 
     @Override

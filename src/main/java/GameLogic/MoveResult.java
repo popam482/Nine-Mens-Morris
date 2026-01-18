@@ -28,10 +28,6 @@ public class MoveResult {
         return message;
     }
 
-    public boolean isMillFormed() {
-        return millFormed;
-    }
-
     public boolean isGameOver() {
         return gameOver;
     }
@@ -40,9 +36,6 @@ public class MoveResult {
         return winner;
     }
 
-    public boolean isRemovePhase() {
-        return removePhase;
-    }
 
     // SETTERS
     public void setMillFormed(boolean millFormed) {

@@ -1,6 +1,7 @@
 package Players;
 
 import GameLogic.GameManager;
+import GameLogic.Move;
 import GameLogic.MoveResult;
 import Network.NetworkConnection;
 

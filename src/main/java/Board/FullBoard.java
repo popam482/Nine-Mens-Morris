@@ -49,21 +49,6 @@ public class FullBoard {
         return allNodes[index];
     }
 
-    public SquareNode[] getAllNodes() {
-        return allNodes;
-    }
-
-
-    public int getNodeIndex(SquareNode node) {
-        for (int i = 0; i < 24; i++) {
-            if (allNodes[i] == node) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-
     public boolean hasValidMoves(Player player, IGameRules rules) {
         String color = player.getColor();
 

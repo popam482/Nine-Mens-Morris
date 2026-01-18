@@ -46,12 +46,7 @@ public class Node {
     public int[] getNeighbours(){
         return neighbours;
     }
-
-    public int getNeighbour(int direction){
-        if (direction < 0 || direction > 3) return -1;
-        return neighbours[direction];
-    }
-
+    
     // PAINT PIECES
     public void paintEmpty(Circle c){
         c.setFill(Color.GRAY);

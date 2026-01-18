@@ -7,7 +7,7 @@ import GameLogic.MoveResult;
 import Navigator.Navigator;
 import Network.NetworkConnection;
 import Players.LocalPlayer;
-import Players.Move;
+import GameLogic.Move;
 import Players.NetworkPlayer;
 import Players.Player;
 import javafx.application.Platform;
