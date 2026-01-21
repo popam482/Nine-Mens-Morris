@@ -21,7 +21,7 @@ public class MillChecker {
                 " (level=" + level + ", pos=" + position + ", color=" + color + ")");
 
 
-        if (checkMill(board, level, position, color)) {
+        if (checkSquareMill(board, level, position, color)) {
             System.out.println("  -> MILL FOUND!");
             return true;
         }
@@ -44,7 +44,7 @@ public class MillChecker {
       4-5-6 (bottom horizontal)
       6-7-0 (left vertical)
      */
-    private boolean checkMill(FullBoard board, int level, int position, String color) {
+    private boolean checkSquareMill(FullBoard board, int level, int position, String color) {
         int baseIndex = level * 8;
 
 

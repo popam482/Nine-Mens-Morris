@@ -24,7 +24,7 @@ public class NetworkPlayer extends Player {
     @Override
     public MoveResult processClick(int nodeId, GameManager gameManager) {
         MoveResult result = gameManager.processClick(nodeId);
-        if (isLocal && result.isSuccess() && connection != null) {
+        if (isLocal && connection != null) {
             sendMove(new Move(nodeId, this.getColor()));
         }
 
